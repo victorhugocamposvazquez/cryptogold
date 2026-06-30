@@ -115,6 +115,12 @@ export function CryptohostSection() {
         </div>
       </div>
       <CryptohostHistoryFeed />
+      <p style={css("text-align:center;margin:16px 0 0;font:400 12px var(--font-hanken);color:#6B6B76")}>
+        Operadores CRYPTOHOST ·{" "}
+        <Link href="/admin" prefetch style={css("color:#9A7B0A;text-decoration:none;font-weight:600")}>
+          panel de administración
+        </Link>
+      </p>
     </section>
   );
 }
