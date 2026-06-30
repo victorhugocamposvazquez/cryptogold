@@ -56,9 +56,16 @@ export default function CryptohostLayout({ children }: { children: React.ReactNo
 
   return (
     <div data-ops-shell data-ops-open={open ? "true" : undefined} style={css("min-height:100vh;background:#0D0D0D;color:#fff;display:flex")}>
+      <button
+        type="button"
+        data-ops-overlay
+        aria-label="Cerrar menú"
+        onClick={closeMenu}
+      />
+
       <CryptohostNav onNavigate={closeMenu} onClose={closeMenu} />
 
-      <div data-ops-content style={css("flex:1;display:flex;flex-direction:column;min-width:0")}>
+      <div style={css("flex:1;display:flex;flex-direction:column;min-width:0")}>
         <header data-ops-topbar>
           <button
             type="button"
@@ -114,13 +121,6 @@ export default function CryptohostLayout({ children }: { children: React.ReactNo
           </button>
         </nav>
       </div>
-
-      <button
-        type="button"
-        data-ops-overlay
-        aria-label="Cerrar menú"
-        onClick={closeMenu}
-      />
     </div>
   );
 }

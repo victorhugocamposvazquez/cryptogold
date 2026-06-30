@@ -104,7 +104,7 @@ export default function CryptohostNav({ onNavigate, onClose }: Props) {
     <aside
       data-ops-sidebar
       style={css(
-        "width:252px;border-right:1px solid rgba(255,255,255,0.08);padding:24px 14px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh;overflow-y:auto;box-sizing:border-box"
+        "width:252px;background:#0D0D0D;border-right:1px solid rgba(255,255,255,0.08);padding:24px 14px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh;overflow-y:auto;box-sizing:border-box"
       )}
     >
       <div data-ops-sidebar-header style={css("display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:20px")}>
