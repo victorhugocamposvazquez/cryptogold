@@ -30,3 +30,6 @@ next-env.d.ts
 
 # vercel
 .vercel
+
+# cryptohost generated archive (regenerable from /admin)
+data/cryptohost-history.json

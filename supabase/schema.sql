@@ -198,3 +198,54 @@ $$;
 
 revoke all on function public.credit_fiat_purchase from public;
 grant execute on function public.credit_fiat_purchase to service_role;
+
+-- ============================================================
+-- CRYPTOHOST — motor de liquidación (servicio propio CryptoGold)
+-- ============================================================
+create table if not exists public.cryptohost_transfers (
+  id             text primary key,
+  kind           text not null check (kind in ('buy','sell','swap','fiat_credit')),
+  status         text not null default 'pending' check (status in ('pending','processing','confirmed','failed')),
+  wallet         text,
+  pay_asset      text,
+  pay_amount     numeric,
+  receive_asset  text not null default 'CGOLD',
+  receive_amount numeric,
+  fee_usd        numeric,
+  price_usd      numeric,
+  provider       text,
+  chain          text,
+  error          text,
+  attempts       int not null default 1,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now(),
+  confirmed_at   timestamptz
+);
+
+create index if not exists idx_cryptohost_transfers_created on public.cryptohost_transfers (created_at desc);
+create index if not exists idx_cryptohost_transfers_status on public.cryptohost_transfers (status);
+
+create table if not exists public.cryptohost_events (
+  id          uuid primary key default gen_random_uuid(),
+  transfer_id text not null references public.cryptohost_transfers(id) on delete cascade,
+  event       text not null,
+  detail      text,
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists idx_cryptohost_events_transfer on public.cryptohost_events (transfer_id);
+
+create table if not exists public.cryptohost_incidents (
+  id          uuid primary key default gen_random_uuid(),
+  title       text not null,
+  status      text not null default 'open' check (status in ('open','resolved')),
+  severity    text not null default 'minor' check (severity in ('minor','major','critical')),
+  description text,
+  eta         timestamptz,
+  created_at  timestamptz not null default now(),
+  resolved_at timestamptz
+);
+
+alter table public.cryptohost_transfers enable row level security;
+alter table public.cryptohost_events enable row level security;
+alter table public.cryptohost_incidents enable row level security;

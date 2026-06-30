@@ -3,7 +3,9 @@
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PRICES_USD } from "./format";
 import { TOKEN_SYMBOL } from "./brand";
-import { getMarket, startMarketTicker } from "./market";
+import { getMarket, startMarketTicker, pushCryptohostActivity } from "./market";
+import { submitCryptohostTransfer } from "./cryptohost/client";
+import type { CreateTransferInput } from "./cryptohost/types";
 
 /* ──────────────────────────────────────────────────────────
    CryptoGold demo store. Trading logic simulated client-side
@@ -276,21 +278,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const cryptohostId = useCallback(async (input: CreateTransferInput) => {
+    try {
+      return await submitCryptohostTransfer(input);
+    } catch {
+      return "CGD-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+    }
+  }, []);
+
   const finishBuy = useCallback(
-    (openAdded: number, usdGross: number, feeUsd: number, payLabel: string, kind: string, debit: { asset: string; amount: number } | null) => {
+    (openAdded: number, usdGross: number, feeUsd: number, payLabel: string, kind: string, debit: { asset: string; amount: number } | null, transferId: string) => {
       const P = prices(getMarket().price);
       const tx: Tx = {
         type: kind,
         main: "+" + fmtN(openAdded, 2) + " " + TK,
         sub: payLabel,
         time: "ahora",
-        id: "CGD-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
+        id: transferId,
         date: dateStr(),
         openStr: fmtN(openAdded, 2),
         payLabel,
         rate: "1 " + TK + " = " + fmtUSD(P[TK]),
         fee: fmtUSD(feeUsd),
       };
+      pushCryptohostActivity(sref.current.address, "buy", openAdded);
       setS((p) => {
         const b = { ...p.balances };
         if (debit) b[debit.asset] = +(b[debit.asset] - debit.amount).toFixed(6);
@@ -307,14 +318,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const finishSwapOut = useCallback(
-    (openSpent: number, tokenAsset: string, tokenAmt: number, feeUsd: number) => {
+    (openSpent: number, tokenAsset: string, tokenAmt: number, feeUsd: number, transferId: string) => {
       const P = prices(getMarket().price);
       const tx: Tx = {
         type: "Venta",
         main: "+" + fmtN(tokenAmt, tokenAsset === "BTC" ? 5 : 4) + " " + tokenAsset,
         sub: fmtN(openSpent, 2) + " " + TK + " → " + tokenAsset,
         time: "ahora",
-        id: "CGD-" + Math.random().toString(36).slice(2, 8).toUpperCase(),
+        id: transferId,
         date: dateStr(),
         openStr: fmtN(openSpent, 2),
         payLabel: fmtN(openSpent, 2) + " " + TK,
@@ -323,6 +334,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         isSell: true,
         recvLabel: fmtN(tokenAmt, tokenAsset === "BTC" ? 5 : 4) + " " + tokenAsset,
       };
+      pushCryptohostActivity(sref.current.address, "sell", openSpent);
       setS((p) => {
         const b = { ...p.balances };
         b[TK] = +(b[TK] - openSpent).toFixed(2);
@@ -353,16 +365,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (p.cardCvc.length < 3) return toastMsg("CVC inválido");
     if (!p.cardName.trim()) return toastMsg("Añade el titular de la tarjeta");
     runProcessing(() => {
-      const cur = sref.current;
-      const amt = parseFloat(cur.payAmount) || 0;
-      const P = prices(getMarket().price);
-      const rate = cur.provider === "moonpay" ? 0.019 : 0.015;
-      const usd = amt * P[cur.cardCur];
-      const open = (usd * (1 - rate)) / P[TK];
-      const prov = cur.provider === "moonpay" ? "MoonPay" : "Transak";
-      finishBuy(open, usd, usd * rate, fmtN(amt, 2) + " " + cur.cardCur + " · " + prov, "Compra con tarjeta", null);
+      void (async () => {
+        const cur = sref.current;
+        const amt = parseFloat(cur.payAmount) || 0;
+        const P = prices(getMarket().price);
+        const rate = cur.provider === "moonpay" ? 0.019 : 0.015;
+        const usd = amt * P[cur.cardCur];
+        const open = (usd * (1 - rate)) / P[TK];
+        const prov = cur.provider === "moonpay" ? "MoonPay" : "Transak";
+        const id = await cryptohostId({
+          kind: "fiat_credit",
+          wallet: cur.address,
+          pay_asset: cur.cardCur,
+          pay_amount: amt,
+          receive_amount: open,
+          fee_usd: usd * rate,
+          price_usd: P[TK],
+          provider: prov,
+        });
+        finishBuy(open, usd, usd * rate, fmtN(amt, 2) + " " + cur.cardCur + " · " + prov, "Compra con tarjeta", null, id);
+      })();
     });
-  }, [runProcessing, finishBuy, toastMsg]);
+  }, [runProcessing, finishBuy, cryptohostId, toastMsg]);
 
   const buy = useCallback(() => {
     const p = sref.current;
@@ -375,12 +399,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const isCrypto = a === "USDT" || a === "USDC" || a === "ETH" || a === "BTC";
     if (isCrypto && (p.balances[a] || 0) < amt) return toastMsg("Saldo insuficiente de " + a);
     runProcessing(() => {
-      const cur = sref.current;
-      const usd = amt * P[a];
-      const open = (usd * 0.99) / P[TK];
-      finishBuy(open, usd, usd * 0.01, "con " + fmtN(amt, a === "BTC" ? 4 : 2) + " " + a, "Compra", isCrypto ? { asset: a, amount: amt } : null);
+      void (async () => {
+        const cur = sref.current;
+        const usd = amt * P[a];
+        const open = (usd * 0.99) / P[TK];
+        const id = await cryptohostId({
+          kind: "buy",
+          wallet: cur.address,
+          pay_asset: a,
+          pay_amount: amt,
+          receive_amount: open,
+          fee_usd: usd * 0.01,
+          price_usd: P[TK],
+        });
+        finishBuy(open, usd, usd * 0.01, "con " + fmtN(amt, a === "BTC" ? 4 : 2) + " " + a, "Compra", isCrypto ? { asset: a, amount: amt } : null, id);
+      })();
     });
-  }, [payCard, runProcessing, finishBuy, set, toastMsg]);
+  }, [payCard, runProcessing, finishBuy, cryptohostId, set, toastMsg]);
 
   const swap = useCallback(() => {
     const p = sref.current;
@@ -393,16 +428,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const payToken = side === "toOpen" ? token : TK;
     if ((p.balances[payToken] || 0) < amt) return toastMsg("Saldo insuficiente de " + payToken);
     runProcessing(() => {
-      const usd = amt * P[payToken];
-      if (side === "toOpen") {
-        const open = (usd * 0.997) / P[TK];
-        finishBuy(open, usd, usd * 0.003, fmtN(amt, 4) + " " + token + " → " + TK, "Intercambio", { asset: token, amount: amt });
-      } else {
-        const recv = (usd * 0.997) / P[token];
-        finishSwapOut(amt, token, recv, usd * 0.003);
-      }
+      void (async () => {
+        const cur = sref.current;
+        const usd = amt * P[payToken];
+        if (side === "toOpen") {
+          const open = (usd * 0.997) / P[TK];
+          const id = await cryptohostId({
+            kind: "swap",
+            wallet: cur.address,
+            pay_asset: token,
+            pay_amount: amt,
+            receive_amount: open,
+            fee_usd: usd * 0.003,
+            price_usd: P[TK],
+          });
+          finishBuy(open, usd, usd * 0.003, fmtN(amt, 4) + " " + token + " → " + TK, "Intercambio", { asset: token, amount: amt }, id);
+        } else {
+          const recv = (usd * 0.997) / P[token];
+          const id = await cryptohostId({
+            kind: "sell",
+            wallet: cur.address,
+            pay_asset: TK,
+            pay_amount: amt,
+            receive_amount: recv,
+            receive_asset: token,
+            fee_usd: usd * 0.003,
+            price_usd: P[TK],
+          });
+          finishSwapOut(amt, token, recv, usd * 0.003, id);
+        }
+      })();
     });
-  }, [runProcessing, finishBuy, finishSwapOut, set, toastMsg]);
+  }, [runProcessing, finishBuy, finishSwapOut, cryptohostId, set, toastMsg]);
 
   const closeSuccess = useCallback(() => set({ successOpen: false }), [set]);
   const downloadReceipt = useCallback(() => {

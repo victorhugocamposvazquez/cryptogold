@@ -85,6 +85,19 @@ async function loadGoldSpot() {
   }
 }
 
+export function pushCryptohostActivity(wallet: string, kind: "buy" | "sell" | "swap", amount: number) {
+  const short = wallet && wallet.length > 10 ? wallet.slice(0, 4) + "…" + wallet.slice(-4) : "0x…";
+  const action = kind === "buy" ? "compró" : kind === "sell" ? "vendió" : "intercambió";
+  market = {
+    ...market,
+    activity: [
+      { id: "ch" + Date.now(), addr: short, action, amt: Math.round(amount).toLocaleString("en-US"), ts: Date.now() },
+      ...market.activity,
+    ].slice(0, 6),
+  };
+  emit();
+}
+
 function genActivity(): ActivityRow {
   const hex = "0123456789abcdef";
   const r = (n: number) => Array.from({ length: n }, () => hex[Math.floor(Math.random() * 16)]).join("");

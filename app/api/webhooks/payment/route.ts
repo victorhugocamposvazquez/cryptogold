@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cgoldPriceFromGold, isPaymentWebhookConfigured, isSupabaseAdminConfigured } from "@/lib/env";
 import { fetchGoldSpot } from "@/lib/gold-server";
+import { createTransfer } from "@/lib/cryptohost/service";
 
 export const dynamic = "force-dynamic";
 
@@ -41,16 +42,37 @@ export async function POST(req: Request) {
   const gold = await fetchGoldSpot();
   const priceUsd = cgoldPriceFromGold(gold.usdPerOz);
 
+  let cryptohostTransfer;
+  try {
+    const grossUsd = payAmount * (payAsset === "EUR" ? 1.08 : 1);
+    const feeUsd = grossUsd * 0.015;
+    const cgold = (grossUsd - feeUsd) / priceUsd;
+    cryptohostTransfer = await createTransfer({
+      kind: "fiat_credit",
+      wallet,
+      pay_asset: payAsset,
+      pay_amount: payAmount,
+      receive_amount: cgold,
+      fee_usd: feeUsd,
+      price_usd: priceUsd,
+      provider: provider ?? "transak",
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "CRYPTOHOST failed";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+
   if (!isSupabaseAdminConfigured()) {
     return NextResponse.json({
       ok: true,
       mode: "demo",
-      message: "Webhook received. Configure Supabase to persist trades.",
+      message: "Webhook processed via CRYPTOHOST. Configure Supabase to persist trades.",
       wallet,
       payAmount,
       priceUsd,
       externalId,
       provider,
+      cryptohost: cryptohostTransfer,
     });
   }
 
@@ -66,7 +88,7 @@ export async function POST(req: Request) {
       p_provider: provider,
     });
     if (error) throw error;
-    return NextResponse.json({ ok: true, mode: "production", tx: data });
+    return NextResponse.json({ ok: true, mode: "production", tx: data, cryptohost: cryptohostTransfer });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "credit failed";
     return NextResponse.json({ error: msg }, { status: 500 });

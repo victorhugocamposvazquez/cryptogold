@@ -14,6 +14,7 @@ import {
 } from "@/lib/brand";
 import { structuredBacking, infraItems, roadmapPhases, listingStages } from "@/lib/content";
 import { Hov } from "./ui";
+import CryptohostHistoryFeed from "./CryptohostHistoryFeed";
 
 const statusColor = (s: "done" | "active" | "upcoming" | "planned") =>
   s === "done" ? "#26A17B" : s === "active" ? "#C9A227" : "#A8A8AE";
@@ -89,8 +90,8 @@ export function CryptohostSection() {
           </p>
           <div style={css("display:flex;flex-wrap:wrap;gap:12px;margin-bottom:28px")}>
             {[
+              ["5.000", "Registro visible"],
               ["< 3 s", "Liquidación media"],
-              ["99,9%", "Uptime objetivo"],
               ["CGD-ID", "Trazabilidad total"],
             ].map(([v, l]) => (
               <div key={l} style={css("background:#1A1508;border:1px solid #2A2410;border-radius:12px;padding:12px 16px")}>
@@ -113,6 +114,7 @@ export function CryptohostSection() {
           ))}
         </div>
       </div>
+      <CryptohostHistoryFeed />
     </section>
   );
 }
