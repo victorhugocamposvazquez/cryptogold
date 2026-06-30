@@ -1,19 +1,34 @@
 import { NextResponse } from "next/server";
+import { fetchGoldSpot } from "@/lib/gold-server";
+import { cgoldPriceFromGold, isSupabaseAdminConfigured } from "@/lib/env";
 
-/**
- * Price-feed cron endpoint (Vercel Cron — see vercel.json, runs every minute).
- *
- * Inserts a new OPEN/USD tick so the chart + ticker have fresh data.
- * Dependency-free by default so the project builds out of the box.
- *
- * To wire it to Supabase:
- *   import { createAdminClient } from "@/lib/supabase/server";
- *   const supabase = createAdminClient();
- *   const price = await fetchOpenPriceFromYourFeed();
- *   await supabase.from("price_ticks").insert({ price_usd: price });
- */
+export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
 export async function GET() {
-  // const price = await fetchOpenPriceFromYourFeed();
-  // await createAdminClient().from("price_ticks").insert({ price_usd: price });
-  return NextResponse.json({ ok: true, note: "Conecta Supabase para insertar price_ticks reales." });
+  const gold = await fetchGoldSpot();
+  const cgoldUsd = cgoldPriceFromGold(gold.usdPerOz);
+
+  let persisted = false;
+  if (isSupabaseAdminConfigured()) {
+    try {
+      const { createAdminClient } = await import("@/lib/supabase/server");
+      const supabase = createAdminClient();
+      await supabase.from("price_ticks").insert({
+        price_usd: cgoldUsd,
+        gold_usd: gold.usdPerOz,
+      });
+      persisted = true;
+    } catch {
+      /* demo mode or schema not migrated */
+    }
+  }
+
+  return NextResponse.json({
+    ok: true,
+    cgoldUsd,
+    goldUsd: gold.usdPerOz,
+    source: gold.source,
+    persisted,
+  });
 }

@@ -10,13 +10,11 @@ import { useApp } from "@/lib/store";
  * PRODUCTION (Supabase atomic RPC — see supabase/schema.sql):
  *   const supabase = createClient();
  *   const { data, error } = await supabase.rpc('execute_trade', {
- *     p_kind: 'buy',            // 'buy' | 'swap'
- *     p_pay_asset: 'USDC',      // 'USDC' | 'ETH' | 'BTC' | 'EUR' | 'USD'
+ *     p_kind: 'buy',
+ *     p_pay_asset: 'USDT',
  *     p_pay_amount: 500,
- *     p_price_usd: price,       // OPEN/USD from useOpenPrice()
+ *     p_price_usd: price,
  *   });
- *   // execute_trade validates the balance, debits the pay asset,
- *   // credits OPEN and writes the transaction in a single DB transaction.
  *
  * Card payments: do NOT process cards yourself. Open the Transak/MoonPay
  * widget; on completion their webhook (a Supabase Edge Function / route

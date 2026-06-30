@@ -1,17 +1,12 @@
-// @ts-nocheck
-/**
- * Supabase server client (Server Components, Route Handlers, Server Actions).
- *
- * 1) npm i @supabase/supabase-js @supabase/ssr
- * 2) set the env vars (see .env.example)
- *
- * Use the service-role key ONLY in trusted server contexts (e.g. the on-ramp
- * webhook handler that credits OPEN after a Transak/MoonPay payment).
- */
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { isSupabaseAdminConfigured, isSupabaseConfigured } from "@/lib/env";
 
 export function createClient() {
+  if (!isSupabaseConfigured()) {
+    throw new Error("Supabase not configured. Copy .env.example to .env.local");
+  }
   const cookieStore = cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,7 +20,7 @@ export function createClient() {
           try {
             cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
           } catch {
-            // called from a Server Component — safe to ignore when using middleware refresh
+            /* Server Component — safe to ignore */
           }
         },
       },
@@ -35,8 +30,14 @@ export function createClient() {
 
 /** Admin client for webhooks / cron. Never expose to the browser. */
 export function createAdminClient() {
-  const { createClient: createSb } = require("@supabase/supabase-js");
-  return createSb(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
+  if (!isSupabaseAdminConfigured()) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY required for admin operations");
+  }
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
 }
+
+export { isSupabaseConfigured, isSupabaseAdminConfigured };
