@@ -21,8 +21,8 @@ export const CRYPTOHOST_SECTIONS: NavSection[] = [
     title: "Monitor",
     items: [
       { href: "/cryptohost", label: "Registro en vivo" },
-      { href: "/docs/status", label: "Estado del servicio" },
-      { href: "/docs/cryptohost", label: "Documentación" },
+      { href: "/cryptohost/status", label: "Estado del servicio" },
+      { href: "/cryptohost/documentacion", label: "Documentación" },
     ],
   },
   {
@@ -37,8 +37,8 @@ export const CRYPTOHOST_SECTIONS: NavSection[] = [
   {
     title: "Liquidación",
     items: [
-      { href: "/comprar", label: "Comprar CGOLD" },
-      { href: "/swap", label: "Intercambiar" },
+      { href: "/cryptohost/comprar", label: "Comprar CGOLD" },
+      { href: "/cryptohost/swap", label: "Intercambiar" },
     ],
   },
 ];
