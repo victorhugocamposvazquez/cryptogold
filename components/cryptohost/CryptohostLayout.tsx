@@ -42,26 +42,39 @@ export default function CryptohostLayout({ children }: { children: React.ReactNo
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
+  const closeMenu = () => setOpen(false);
+  const toggleMenu = () => setOpen((prev) => !prev);
+
   return (
     <div data-ops-shell data-ops-open={open ? "true" : undefined} style={css("min-height:100vh;background:#0D0D0D;color:#fff;display:flex")}>
       <button
         type="button"
         data-ops-overlay
         aria-label="Cerrar menú"
-        onClick={() => setOpen(false)}
+        onClick={closeMenu}
       />
 
-      <CryptohostNav onNavigate={() => setOpen(false)} />
+      <CryptohostNav onNavigate={closeMenu} onClose={closeMenu} />
 
       <div style={css("flex:1;display:flex;flex-direction:column;min-width:0")}>
         <header data-ops-topbar>
           <button
             type="button"
-            aria-label="Abrir menú"
-            onClick={() => setOpen(true)}
+            aria-label={open ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={open}
+            onClick={toggleMenu}
             style={css("appearance:none;cursor:pointer;background:rgba(255,255,255,0.08);border:none;border-radius:10px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px")}
           >
-            ☰
+            {open ? "×" : "☰"}
           </button>
           <Link href="/cryptohost" style={css("display:flex;align-items:center;gap:8px;text-decoration:none;min-width:0")}>
             <Logo height={26} />
@@ -98,11 +111,13 @@ export default function CryptohostLayout({ children }: { children: React.ReactNo
           })}
           <button
             type="button"
-            onClick={() => setOpen(true)}
-            style={css("appearance:none;cursor:pointer;background:transparent;border:none;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:600 11px var(--font-hanken);color:#8A8A94;padding:6px 4px")}
+            aria-label={open ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={open}
+            onClick={toggleMenu}
+            style={css(`appearance:none;cursor:pointer;background:transparent;border:none;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:600 11px var(--font-hanken);padding:6px 4px;color:${open ? "#C9A227" : "#8A8A94"}`)}
           >
-            <span style={css("font-size:14px;line-height:1")}>⋯</span>
-            Más
+            <span style={css("font-size:14px;line-height:1")}>{open ? "×" : "⋯"}</span>
+            {open ? "Cerrar" : "Más"}
           </button>
         </nav>
       </div>

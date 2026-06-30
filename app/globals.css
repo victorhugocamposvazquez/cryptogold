@@ -41,6 +41,8 @@ button { font-family: inherit; }
 [data-ops-topbar] { display: none; }
 [data-ops-bottom] { display: none; }
 [data-ops-overlay] { display: none; }
+[data-ops-sidebar-close] { display: none; }
+[data-ops-section-body][data-collapsed="true"] { display: none; }
 
 [data-table-wrap] {
   overflow-x: auto;
@@ -182,6 +184,8 @@ button { font-family: inherit; }
     -webkit-backdrop-filter: blur(12px);
     border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
+  [data-ops-sidebar-close] { display: flex; }
+  [data-ops-section-chevron][data-collapsed="true"] { transform: rotate(-90deg); }
   [data-ops-page-title] { font-size: 26px !important; }
   [data-ops-page-sub] { font-size: 14px !important; }
   [data-ops-h1] { font-size: 26px !important; }
