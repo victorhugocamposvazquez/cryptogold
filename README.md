@@ -28,6 +28,16 @@ Abre [http://localhost:3000](http://localhost:3000).
 
 Desde el panel puedes ver transferencias, regenerar el histórico de 5.000 operaciones y consultar métricas.
 
+### Desplegar en Vercel
+
+1. [vercel.com/new](https://vercel.com/new) → importa el repo `cryptogold` desde GitHub
+2. **Environment Variables** (opcional pero recomendado en producción):
+   - `CRYPTOHOST_ADMIN_PASSWORD` = tu contraseña de operadores
+3. Deploy → abre **`https://tu-proyecto.vercel.app/admin`**
+4. Supabase **no es necesario** para el admin; añádelo solo si quieres persistir trades en BD
+
+> Si tu URL sigue mostrando **APEN / apenAI**, el proyecto Vercel apunta a código antiguo. Re-vincula el repo `cryptogold` o crea un proyecto nuevo.
+
 ## Producción (Fase 3)
 
 1. **Supabase** — crea proyecto, ejecuta `supabase/schema.sql`, copia URL y keys a `.env.local`

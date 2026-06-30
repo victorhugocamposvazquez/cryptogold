@@ -16,7 +16,7 @@ declare global {
   var __cryptohostHistoricalMeta: { seed: number; count: number; source: "file" | "generated" } | undefined;
 }
 
-const DATA_DIR = join(process.cwd(), "data");
+const DATA_DIR = process.env.VERCEL ? join("/tmp", "cryptogold") : join(process.cwd(), "data");
 const DATA_FILE = join(DATA_DIR, "cryptohost-history.json");
 
 type ArchiveFile = {
@@ -81,15 +81,19 @@ export function findHistoricalTransfer(id: string): CryptohostTransfer | null {
 }
 
 export function saveHistoricalArchive(transfers: CryptohostTransfer[], seed: number, count: number) {
-  mkdirSync(DATA_DIR, { recursive: true });
-  const payload: ArchiveFile = {
-    version: 1,
-    generatedAt: new Date().toISOString(),
-    seed,
-    count,
-    transfers,
-  };
-  writeFileSync(DATA_FILE, JSON.stringify(payload), "utf8");
+  try {
+    mkdirSync(DATA_DIR, { recursive: true });
+    const payload: ArchiveFile = {
+      version: 1,
+      generatedAt: new Date().toISOString(),
+      seed,
+      count,
+      transfers,
+    };
+    writeFileSync(DATA_FILE, JSON.stringify(payload), "utf8");
+  } catch {
+    /* Vercel: memoria caliente basta si no hay disco escribible */
+  }
   globalThis.__cryptohostHistoricalCache = transfers;
   globalThis.__cryptohostHistoricalMeta = { seed, count, source: "file" };
 }
