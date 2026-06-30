@@ -46,7 +46,7 @@ function Footer() {
   return (
     <footer style={css("border-top:1px solid #ECECEC;margin-top:40px")}>
       <div style={css("max-width:1200px;margin:0 auto;padding:48px 24px 40px")}>
-        <div style={css("display:flex;justify-content:space-between;gap:32px;flex-wrap:wrap;margin-bottom:36px")}>
+        <div data-footer-top style={css("display:flex;justify-content:space-between;gap:32px;flex-wrap:wrap;margin-bottom:36px")}>
           <div style={css("max-width:320px")}>
             <Link href="/" prefetch style={css("text-decoration:none;font:700 20px var(--font-hanken);letter-spacing:-0.04em;color:#0D0D0D")}>
               Crypto<span style={{ color: ACCENT }}>Gold</span>
@@ -55,7 +55,7 @@ function Footer() {
               Token respaldado en oro físico. Compra, intercambia y custodia {TOKEN_SYMBOL} con USDT, cripto o tarjeta.
             </p>
           </div>
-          <div style={css("display:flex;gap:40px;flex-wrap:wrap")}>
+          <div data-footer-cols style={css("display:flex;gap:40px;flex-wrap:wrap")}>
             {COLS.map((col) => (
               <div key={col.title}>
                 <div style={css("font:600 13px var(--font-hanken);margin-bottom:12px;color:#0D0D0D")}>{col.title}</div>

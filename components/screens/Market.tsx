@@ -32,7 +32,7 @@ export default function Market() {
   ];
 
   return (
-    <main style={css("max-width:1200px;margin:0 auto;padding:40px 24px")}>
+    <main data-section-pad style={css("max-width:1200px;margin:0 auto;padding:40px 24px")}>
       <div style={css("display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:20px;margin-bottom:24px")}>
         <div>
           <div style={css("display:flex;align-items:center;gap:10px;margin-bottom:8px")}>
@@ -40,12 +40,12 @@ export default function Market() {
             <span style={css("font:600 22px var(--font-hanken);letter-spacing:-0.02em")}>{TOKEN_SYMBOL} <span style={css("color:#9A9AA0;font-weight:400")}>/ USD · anclado a XAU</span></span>
           </div>
           <div style={css("display:flex;align-items:baseline;gap:12px")}>
-            <span style={css("font:600 44px var(--font-mono);letter-spacing:-0.03em;color:#9A7B0A")}>{fmtUSD(price)}</span>
+            <span data-market-price style={css("font:600 44px var(--font-mono);letter-spacing:-0.03em;color:#9A7B0A")}>{fmtUSD(price)}</span>
             <span style={{ ...css("font:600 17px var(--font-mono)"), color: changeColor }}>{changeStr}</span>
           </div>
           <div style={css("font:400 13px var(--font-mono);color:#8A8A94;margin-top:6px")}>Oro {fmtUSD(goldSpot)}/oz · {(goldChange >= 0 ? "+" : "") + goldChange.toFixed(2) + "%"} 24h</div>
         </div>
-        <div style={css("display:flex;gap:4px;background:#F4F4F5;padding:4px;border-radius:12px")}>
+        <div data-market-tf style={css("display:flex;gap:4px;background:#F4F4F5;padding:4px;border-radius:12px")}>
           {TFS.map((k) => {
             const active = tf === k;
             return (
@@ -57,10 +57,10 @@ export default function Market() {
         </div>
       </div>
       <div style={css("background:#fff;border:1px solid #ECECEC;border-radius:20px;padding:22px;margin-bottom:24px")}>
-        <Chart key={tf} series={arr} price={price} height={360} gradId="gMain" />
+        <div data-market-chart><Chart key={tf} series={arr} price={price} height={360} gradId="gMain" /></div>
       </div>
-      <div data-2col style={css("display:grid;grid-template-columns:1.6fr 1fr;gap:24px;align-items:start")}>
-        <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#ECECEC;border:1px solid #ECECEC;border-radius:18px;overflow:hidden")}>
+      <div data-2col data-market-grid style={css("display:grid;grid-template-columns:1.6fr 1fr;gap:24px;align-items:start")}>
+        <div data-market-stats style={css("display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#ECECEC;border:1px solid #ECECEC;border-radius:18px;overflow:hidden")}>
           {stats.map((m, i) => (
             <div key={i} style={css("background:#fff;padding:20px 22px")}>
               <div style={css("font:500 13px var(--font-hanken);color:#8A8A94;margin-bottom:6px")}>{m.label}</div>

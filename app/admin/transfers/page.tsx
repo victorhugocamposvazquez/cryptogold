@@ -25,7 +25,7 @@ export default function AdminTransfersPage() {
 
   return (
     <div>
-      <h1 style={css("font:700 32px var(--font-hanken);margin:0 0 8px;letter-spacing:-0.03em")}>Transferencias</h1>
+      <h1 data-ops-h1 style={css("font:700 32px var(--font-hanken);margin:0 0 8px;letter-spacing:-0.03em")}>Transferencias</h1>
       <p style={css("font:400 15px var(--font-hanken);color:#9A9AA0;margin:0 0 28px")}>
         Todas las operaciones procesadas por CRYPTOHOST en esta instancia.
       </p>
@@ -34,6 +34,7 @@ export default function AdminTransfersPage() {
         {loading ? (
           <p style={css("padding:24px 20px;color:#9A9AA0;margin:0")}>Cargando…</p>
         ) : (
+          <div data-admin-table-wrap data-table-wrap>
           <table style={css("width:100%;border-collapse:collapse;font:400 13px var(--font-hanken)")}>
             <thead>
               <tr style={css("color:#9A9AA0;text-align:left")}>
@@ -77,6 +78,7 @@ export default function AdminTransfersPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

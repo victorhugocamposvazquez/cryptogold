@@ -14,8 +14,8 @@ export default function CryptohostPage() {
         <p style={css("font:600 12px var(--font-mono);color:#C9A227;text-transform:uppercase;letter-spacing:0.08em;margin:0 0 8px")}>
           Monitor
         </p>
-        <h1 style={css("font:700 36px var(--font-hanken);color:#fff;margin:0 0 10px;letter-spacing:-0.035em")}>Registro en vivo</h1>
-        <p style={css("font:400 15px/1.6 var(--font-hanken);color:#9A9AA0;margin:0;max-width:640px")}>
+        <h1 data-ops-page-title style={css("font:700 36px var(--font-hanken);color:#fff;margin:0 0 10px;letter-spacing:-0.035em")}>Registro en vivo</h1>
+        <p data-ops-page-sub style={css("font:400 15px/1.6 var(--font-hanken);color:#9A9AA0;margin:0;max-width:640px")}>
           Transferencias procesadas por CRYPTOHOST con trazabilidad CGD-ID. Usa el menú lateral para operaciones, liquidaciones e histórico.
         </p>
       </div>

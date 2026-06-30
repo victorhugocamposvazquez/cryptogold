@@ -41,7 +41,7 @@ export default function Buy() {
   const secureText = "Pago securizado vía " + provName + " · Visa, Mastercard y Amex";
 
   return (
-    <main style={css("padding:48px 24px;display:flex;justify-content:center")}>
+    <main data-buy-main style={css("padding:48px 24px;display:flex;justify-content:center")}>
       <div style={css("width:460px;max-width:100%")}>
         <h2 style={css("font:600 30px var(--font-hanken);letter-spacing:-0.03em;margin:0 0 6px")}>Comprar {TOKEN_SYMBOL}</h2>
         <p style={css("font:400 15px var(--font-hanken);color:#6B6B76;margin:0 0 24px")}>USDT, cripto o tarjeta. Liquidación instantánea vía CRYPTOHOST.</p>

@@ -31,7 +31,7 @@ export default function Swap() {
   const payBalance = app.connected ? fmtN(payBal, payDec) + " " + payToken : null;
 
   return (
-    <main style={css("padding:48px 24px;display:flex;justify-content:center")}>
+    <main data-buy-main style={css("padding:48px 24px;display:flex;justify-content:center")}>
       <div style={css("width:460px;max-width:100%")}>
         <h2 style={css("font:600 30px var(--font-hanken);letter-spacing:-0.03em;margin:0 0 6px")}>Intercambiar</h2>
         <p style={css("font:400 15px var(--font-hanken);color:#6B6B76;margin:0 0 24px")}>Cambia USDT, ETH o BTC por {TK} — o vende tus {TK} — al instante.</p>

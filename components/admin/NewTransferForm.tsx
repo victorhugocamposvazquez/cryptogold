@@ -123,7 +123,7 @@ export default function NewTransferForm({ onCreated, compact }: Props) {
         </button>
       </div>
 
-      <form onSubmit={submit} style={css("display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px")}>
+      <form data-admin-form onSubmit={submit} style={css("display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px")}>
         <label style={css("grid-column:span 1")}>
           <span style={labelStyle}>Tipo</span>
           <select value={kind} onChange={(e) => setKind(e.target.value as TransferKind)} style={inputStyle}>

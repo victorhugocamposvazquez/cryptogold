@@ -15,7 +15,7 @@ export default function DocPage({ doc }: { doc: Doc }) {
         ← Volver al inicio
       </Link>
       <div style={{ ...css("font:600 12px var(--font-mono);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px"), color: ACCENT }}>{doc.eyebrow}</div>
-      <h1 style={css("font:600 44px/1.05 var(--font-hanken);letter-spacing:-0.04em;margin:0 0 16px")}>{doc.title}</h1>
+      <h1 data-doc-h1 style={css("font:600 44px/1.05 var(--font-hanken);letter-spacing:-0.04em;margin:0 0 16px")}>{doc.title}</h1>
       <p style={css("font:400 18px/1.55 var(--font-hanken);color:#5C5C66;margin:0 0 14px;max-width:680px;text-wrap:pretty")}>{doc.subtitle}</p>
       <div style={css("font:500 12px var(--font-mono);color:#A8A8AE;padding-bottom:28px;border-bottom:1px solid #ECECEC;margin-bottom:36px")}>{doc.meta}</div>
 

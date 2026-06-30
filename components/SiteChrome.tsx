@@ -10,6 +10,7 @@ import { WalletModal, ProviderModal, SuccessModal, Toast } from "@/components/Mo
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isOpsZone = pathname?.startsWith("/admin") || pathname?.startsWith("/cryptohost");
+  const compactPad = pathname === "/comprar" || pathname === "/swap";
 
   if (isOpsZone) {
     return <>{children}</>;
@@ -17,7 +18,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
 
   return (
     <>
-      <div data-pad style={{ minHeight: "100vh", background: "#fff" }}>
+      <div data-pad data-pad-compact={compactPad ? "true" : undefined} style={{ minHeight: "100vh", background: "#fff" }}>
         <Header />
         <Marquee />
         {children}

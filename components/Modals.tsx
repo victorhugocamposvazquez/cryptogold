@@ -11,12 +11,15 @@ import { walletDefs } from "@/lib/content";
 
 const OVERLAY = "position:fixed;inset:0;z-index:1000;background:rgba(13,13,13,0.42);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px;animation:ov .18s ease";
 
+const overlayProps = { "data-modal-overlay": true };
+const panelProps = { "data-modal-panel": true };
+
 export function WalletModal() {
   const app = useApp();
   if (!app.walletOpen) return null;
   return (
-    <div onClick={app.closeWallet} style={css(OVERLAY)}>
-      <div onClick={(e) => e.stopPropagation()} style={css("width:400px;max-width:100%;background:#fff;border-radius:22px;padding:24px;animation:pop .22s cubic-bezier(.2,.7,.2,1)")}>
+    <div onClick={app.closeWallet} {...overlayProps} style={css(OVERLAY)}>
+      <div onClick={(e) => e.stopPropagation()} {...panelProps} style={css("width:400px;max-width:100%;background:#fff;border-radius:22px;padding:24px;animation:pop .22s cubic-bezier(.2,.7,.2,1)")}>
         <div style={css("display:flex;justify-content:space-between;align-items:center;margin-bottom:6px")}>
           <h3 style={css("font:600 20px var(--font-hanken);letter-spacing:-0.02em;margin:0")}>Conectar wallet</h3>
           <button onClick={app.closeWallet} style={css("appearance:none;border:none;background:#F4F4F5;width:30px;height:30px;border-radius:50%;cursor:pointer;color:#6B6B76;font-size:16px")}>×</button>
@@ -59,8 +62,8 @@ export function ProviderModal() {
   const inp = "width:100%;border:1px solid #E6E6E8;border-radius:12px;padding:14px 16px;font:500 16px var(--font-mono);color:#0D0D0D";
 
   return (
-    <div onClick={app.closeProvider} style={css(OVERLAY.replace("z-index:1000", "z-index:1000"))}>
-      <div onClick={(e) => e.stopPropagation()} style={css("width:420px;max-width:100%;background:#fff;border-radius:22px;overflow:hidden;animation:pop .22s cubic-bezier(.2,.7,.2,1)")}>
+    <div onClick={app.closeProvider} {...overlayProps} style={css(OVERLAY.replace("z-index:1000", "z-index:1000"))}>
+      <div onClick={(e) => e.stopPropagation()} {...panelProps} style={css("width:420px;max-width:100%;background:#fff;border-radius:22px;overflow:hidden;animation:pop .22s cubic-bezier(.2,.7,.2,1)")}>
         <div style={{ ...css("padding:18px 22px;display:flex;align-items:center;justify-content:space-between"), background: provColor }}>
           <div style={css("display:flex;align-items:center;gap:10px")}>
             <span style={css("width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;color:#fff;font:700 15px var(--font-hanken)")}>{provInitial}</span>
@@ -111,8 +114,8 @@ export function SuccessModal() {
     </div>
   );
   return (
-    <div onClick={app.closeSuccess} style={css(OVERLAY.replace("z-index:1000", "z-index:1050"))}>
-      <div onClick={(e) => e.stopPropagation()} style={css("width:420px;max-width:100%;background:#fff;border-radius:22px;padding:26px;animation:pop .22s cubic-bezier(.2,.7,.2,1)")}>
+    <div onClick={app.closeSuccess} {...overlayProps} style={css(OVERLAY.replace("z-index:1000", "z-index:1050"))}>
+      <div onClick={(e) => e.stopPropagation()} {...panelProps} style={css("width:420px;max-width:100%;background:#fff;border-radius:22px;padding:26px;animation:pop .22s cubic-bezier(.2,.7,.2,1)")}>
         <div style={css("display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:20px")}>
           <span style={{ ...css("width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:14px"), background: "color-mix(in srgb, var(--accent) 13%, #fff)", color: ACCENT }}>✓</span>
           <div style={css("font:600 22px var(--font-hanken);letter-spacing:-0.02em;margin-bottom:4px")}>¡Operación completada!</div>
@@ -139,7 +142,7 @@ export function Toast() {
   const app = useApp();
   if (!app.toast) return null;
   return (
-    <div style={css("position:fixed;bottom:28px;left:50%;z-index:1100;transform:translateX(-50%);background:#0D0D0D;color:#fff;padding:13px 22px;border-radius:999px;font:600 14px var(--font-hanken);box-shadow:0 12px 30px -8px rgba(0,0,0,0.4);animation:tin .25s cubic-bezier(.2,.7,.2,1);display:flex;align-items:center;gap:10px;white-space:nowrap")}>
+    <div data-toast style={css("position:fixed;bottom:28px;left:50%;z-index:1100;transform:translateX(-50%);background:#0D0D0D;color:#fff;padding:13px 22px;border-radius:999px;font:600 14px var(--font-hanken);box-shadow:0 12px 30px -8px rgba(0,0,0,0.4);animation:tin .25s cubic-bezier(.2,.7,.2,1);display:flex;align-items:center;gap:10px;white-space:nowrap")}>
       <span style={css("width:7px;height:7px;border-radius:50%;background:" + ACCENT)} />
       {app.toast}
     </div>

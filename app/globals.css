@@ -3,6 +3,10 @@
   --accent-light: #E8D48B;
   --accent-dark: #9A7B0A;
   --gold-gradient: linear-gradient(135deg, #E8D48B 0%, #C9A227 45%, #9A7B0A 100%);
+  --mob-nav-h: 56px;
+  --mob-cta-h: 72px;
+  --ops-top-h: 52px;
+  --ops-bottom-h: 56px;
 }
 
 * { box-sizing: border-box; }
@@ -30,15 +34,40 @@ button { font-family: inherit; }
 @keyframes hubring { 0% { transform: scale(1); opacity: .5; } 70%, 100% { transform: scale(1.6); opacity: 0; } }
 @keyframes shimmer { 0% { background-position: 200% center; } 100% { background-position: -200% center; } }
 
-/* responsive — mirrors the design prototype's @media (max-width:860px) */
+/* ——— Desktop defaults ——— */
 [data-mobnav] { display: none; }
 [data-mobcta] { display: none; }
 [data-eco] { display: none !important; }
+[data-ops-topbar] { display: none; }
+[data-ops-bottom] { display: none; }
+[data-ops-overlay] { display: none; }
 
+[data-table-wrap] {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ——— Tablet / mobile (≤860px) ——— */
 @media (max-width: 860px) {
   [data-nav] { display: none !important; }
   [data-pricechip] { display: none !important; }
-  [data-hero] { grid-template-columns: 1fr !important; }
+  [data-brand-mark] { display: none !important; }
+
+  [data-header-inner] {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    height: 56px !important;
+    gap: 12px !important;
+  }
+
+  [data-wallet-link] span:last-child {
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  [data-hero] { grid-template-columns: 1fr !important; gap: 32px !important; }
   [data-stats] { grid-template-columns: 1fr 1fr !important; }
   [data-hub] { max-width: 430px; }
   [data-hubcard] { min-width: 0 !important; padding: 7px 9px !important; }
@@ -47,13 +76,159 @@ button { font-family: inherit; }
   [data-ht] { font-size: 10px !important; }
   [data-hubcenter] { width: 108px !important; height: 108px !important; }
   [data-h1] { font-size: 42px !important; }
+  [data-h2] { font-size: 28px !important; }
+  [data-h3] { font-size: 24px !important; }
+  [data-doc-h1] { font-size: 32px !important; }
   [data-2col] { grid-template-columns: 1fr !important; gap: 28px !important; }
   [data-msg] { grid-template-columns: 1fr !important; padding: 32px 24px !important; }
   [data-infra] { grid-template-columns: 1fr !important; }
   [data-roadmap] { grid-template-columns: 1fr !important; }
   [data-listing-row] { grid-template-columns: 1fr !important; gap: 8px !important; }
+  [data-docstats] { grid-template-columns: 1fr 1fr !important; }
+  [data-market-grid] { grid-template-columns: 1fr !important; }
+  [data-market-stats] { grid-template-columns: 1fr !important; }
+  [data-market-price] { font-size: 34px !important; }
+  [data-market-chart] svg { height: 240px !important; }
   [data-mobnav] { display: grid !important; }
   [data-mobcta] { display: block !important; }
-  [data-pad] { padding-bottom: 130px !important; }
-  [data-chain-table] { overflow-x: auto; }
+  [data-pad] { padding-bottom: calc(var(--mob-nav-h) + var(--mob-cta-h) + env(safe-area-inset-bottom)) !important; }
+  [data-pad][data-pad-compact] { padding-bottom: calc(var(--mob-nav-h) + 12px + env(safe-area-inset-bottom)) !important; }
+  [data-chain-table] { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  [data-chain-table] table { min-width: 520px; }
+
+  [data-section-pad] { padding-left: 16px !important; padding-right: 16px !important; }
+  [data-section-pad-lg] { padding-top: 32px !important; padding-bottom: 32px !important; }
+  [data-hero-pad] { padding: 40px 16px 28px !important; }
+  [data-donut-box] { padding: 28px 20px !important; border-radius: 20px !important; }
+  [data-gold-anchor] { padding: 20px !important; flex-direction: column !important; align-items: flex-start !important; }
+  [data-gold-divider] { display: none !important; }
+  [data-gold-prices] { width: 100%; justify-content: space-between !important; }
+  [data-activity-time] { display: none !important; }
+  [data-activity-text] { font-size: 12px !important; }
+  [data-eco] { display: grid !important; grid-template-columns: 1fr !important; }
+  [data-phone-mock] { width: 240px !important; height: 480px !important; }
+  [data-footer-cols] { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 24px 16px !important; }
+  [data-footer-top] { flex-direction: column !important; gap: 28px !important; }
+  [data-portfolio-addr] { display: none !important; }
+  [data-buy-main] { padding: 24px 16px !important; }
+  [data-support-banner] { flex-direction: column !important; align-items: flex-start !important; padding: 22px 20px !important; }
+  [data-support-actions] { width: 100%; }
+  [data-support-actions] a { flex: 1; text-align: center; }
+
+  /* CRYPTOHOST / Admin ops zone */
+  [data-ops-shell] { flex-direction: column; }
+  [data-ops-sidebar] {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 120;
+    width: min(288px, 88vw) !important;
+    height: 100vh !important;
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.45);
+  }
+  [data-ops-shell][data-ops-open] [data-ops-sidebar] {
+    transform: translateX(0);
+  }
+  [data-ops-overlay] {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 110;
+    background: rgba(0, 0, 0, 0.55);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    animation: ov 0.2s ease;
+  }
+  [data-ops-shell][data-ops-open] [data-ops-overlay] {
+    display: block;
+  }
+  [data-ops-topbar] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 90;
+    height: var(--ops-top-h);
+    padding: 0 14px;
+    padding-top: env(safe-area-inset-top);
+    background: rgba(13, 13, 13, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  [data-ops-main] {
+    padding: calc(var(--ops-top-h) + 16px + env(safe-area-inset-top)) 16px calc(var(--ops-bottom-h) + 20px + env(safe-area-inset-bottom)) !important;
+  }
+  [data-ops-bottom] {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 90;
+    height: calc(var(--ops-bottom-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(13, 13, 13, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  [data-ops-page-title] { font-size: 26px !important; }
+  [data-ops-page-sub] { font-size: 14px !important; }
+  [data-ops-h1] { font-size: 26px !important; }
+  [data-monitor-header] { padding: 14px 16px 12px !important; }
+  [data-monitor-filters] { flex-direction: column !important; align-items: stretch !important; }
+  [data-monitor-search] { width: 100% !important; }
+  [data-cryptohost-cards] { display: block !important; }
+  [data-cryptohost-table-wrap] { display: none !important; }
+  [data-admin-table-wrap] table { min-width: 640px; }
+  [data-admin-form] { grid-template-columns: 1fr !important; }
+  [data-admin-form] label { grid-column: 1 / -1 !important; }
+
+  [data-modal-overlay] {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  [data-modal-panel] {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 22px 22px 0 0 !important;
+    max-height: min(92vh, 720px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  [data-toast] {
+    bottom: calc(var(--mob-nav-h) + 16px + env(safe-area-inset-bottom)) !important;
+    white-space: normal !important;
+    max-width: calc(100vw - 32px);
+    text-align: center;
+    justify-content: center;
+  }
 }
+
+/* ——— Small phones (≤480px) ——— */
+@media (max-width: 480px) {
+  [data-h1] { font-size: 36px !important; }
+  [data-h2] { font-size: 24px !important; }
+  [data-stats] { grid-template-columns: 1fr !important; }
+  [data-stats] > div { padding: 18px 20px !important; }
+  [data-docstats] { grid-template-columns: 1fr !important; }
+  [data-footer-cols] { grid-template-columns: 1fr !important; }
+  [data-phone-mock] { display: none !important; }
+  [data-market-tf] { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; }
+  [data-market-tf] button { flex-shrink: 0; padding-left: 12px !important; padding-right: 12px !important; }
+  [data-wallet-btn] { padding: 8px 12px !important; font-size: 13px !important; }
+  [data-ops-bottom] { grid-template-columns: repeat(5, 1fr); font-size: 10px; }
+}
+
+/* CRYPTOHOST mobile card list (hidden on desktop) */
+[data-cryptohost-cards] { display: none; }

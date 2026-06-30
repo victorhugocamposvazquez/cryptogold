@@ -61,7 +61,7 @@ export default function Portfolio() {
         <div>
           <div style={css("display:flex;align-items:center;gap:10px;margin-bottom:10px")}>
             <h2 style={css("font:600 26px var(--font-hanken);letter-spacing:-0.03em;margin:0")}>Mi cartera</h2>
-            <span style={css("font:500 12px var(--font-mono);color:#6B6B76;background:#F4F4F5;padding:5px 10px;border-radius:999px")}>{app.address}</span>
+            <span data-portfolio-addr style={css("font:500 12px var(--font-mono);color:#6B6B76;background:#F4F4F5;padding:5px 10px;border-radius:999px")}>{app.address}</span>
             <button onClick={app.disconnect} style={css("appearance:none;border:none;background:none;cursor:pointer;font:500 13px var(--font-hanken);color:#D14343")}>Desconectar</button>
           </div>
           <div style={css("font:500 13px var(--font-hanken);color:#8A8A94")}>Valor total</div>

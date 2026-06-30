@@ -50,11 +50,14 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export default function CryptohostNav() {
+type Props = { onNavigate?: () => void };
+
+export default function CryptohostNav({ onNavigate }: Props) {
   const pathname = usePathname();
 
   return (
     <aside
+      data-ops-sidebar
       style={css(
         "width:252px;border-right:1px solid rgba(255,255,255,0.08);padding:24px 14px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh;overflow-y:auto;box-sizing:border-box"
       )}
@@ -79,6 +82,7 @@ export default function CryptohostNav() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={onNavigate}
                   style={css(
                     `display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;font:500 13px var(--font-hanken);text-decoration:none;color:${active ? "#0D0D0D" : "#C8C8CE"};background:${active ? "#C9A227" : "transparent"}`
                   )}
@@ -97,6 +101,7 @@ export default function CryptohostNav() {
       <div style={css("margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08)")}>
         <Link
           href="/"
+          onClick={onNavigate}
           style={css("display:block;padding:10px 12px;border-radius:10px;font:500 13px var(--font-hanken);text-decoration:none;color:#9A9AA0")}
         >
           ← Volver a CryptoGold

@@ -171,7 +171,7 @@ export function RoadmapSection() {
 export function SupportBanner() {
   return (
     <section style={css("max-width:1200px;margin:0 auto;padding:24px 24px 48px")}>
-      <div style={css("display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;background:#F7F7F8;border:1px solid #ECECEC;border-radius:20px;padding:28px 32px")}>
+      <div data-support-banner style={css("display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;background:#F7F7F8;border:1px solid #ECECEC;border-radius:20px;padding:28px 32px")}>
         <div style={css("display:flex;align-items:center;gap:20px;flex-wrap:wrap")}>
           <div style={css("width:56px;height:56px;border-radius:16px;background:#0D0D0D;display:flex;align-items:center;justify-content:center;font:600 22px var(--font-mono);color:#E8D48B")}>{SUPPORT_HUMAN_TEAM}</div>
           <div>
@@ -179,7 +179,7 @@ export function SupportBanner() {
             <div style={css("font:400 14px var(--font-hanken);color:#6B6B76")}>{SUPPORT_HUMAN_TEAM} especialistas · Respuesta media {SUPPORT_SLA} · soporte@cryptogold.io</div>
           </div>
         </div>
-        <div style={css("display:flex;gap:10px;flex-wrap:wrap")}>
+        <div data-support-actions style={css("display:flex;gap:10px;flex-wrap:wrap")}>
           <Link href="/docs/support" prefetch style={css("text-decoration:none;font:600 14px var(--font-hanken);color:#0D0D0D;background:#fff;border:1px solid #DADADD;border-radius:12px;padding:12px 20px")}>Centro de soporte</Link>
           <Link href="/docs/status" prefetch style={css("text-decoration:none;font:600 14px var(--font-hanken);color:#0D0D0D;background:#fff;border:1px solid #DADADD;border-radius:12px;padding:12px 20px")}>Estado del servicio</Link>
         </div>

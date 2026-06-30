@@ -77,7 +77,8 @@ function WalletActions() {
       <Link
         href="/cartera"
         prefetch
-        style={css("text-decoration:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid #ECECEC;background:#fff;border-radius:999px")}
+        data-wallet-link
+        style={css("text-decoration:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid #ECECEC;background:#fff;border-radius:999px;max-width:100%")}
       >
         <span style={css("width:7px;height:7px;border-radius:50%;background:" + ACCENT)} />
         <span style={css("font:500 13px var(--font-mono);color:#0D0D0D")}>{app.address}</span>
@@ -89,6 +90,7 @@ function WalletActions() {
     <Hov
       as="button"
       type="button"
+      data-wallet-btn
       onClick={app.openWallet}
       style="appearance:none;cursor:pointer;background:#0D0D0D;color:#fff;border:none;border-radius:999px;padding:10px 18px;font:600 14px var(--font-hanken);letter-spacing:-0.01em"
       hover="background:#000"
@@ -101,10 +103,10 @@ function WalletActions() {
 export default function Header() {
   return (
     <header style={css("position:sticky;top:0;z-index:50;background:rgba(255,255,255,0.82);backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid #ECECEC")}>
-      <div style={css("max-width:1200px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px")}>
+      <div data-header-inner style={css("max-width:1200px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;gap:20px")}>
         <Link href="/" prefetch style={css("text-decoration:none;display:flex;align-items:center;gap:10px")}>
           <Logo />
-          <BrandMark />
+          <span data-brand-mark><BrandMark /></span>
         </Link>
 
         <NavLinks />

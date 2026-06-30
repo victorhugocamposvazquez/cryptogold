@@ -23,8 +23,8 @@ function GoldAnchor() {
   const pos = goldChange >= 0;
   const chStr = (pos ? "+" : "") + goldChange.toFixed(2) + "%";
   return (
-    <section style={css("max-width:1200px;margin:0 auto;padding:24px 24px")}>
-      <div style={css("background:linear-gradient(135deg,#0D0D0D 0%,#1A1508 50%,#0D0D0D 100%);border-radius:20px;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;border:1px solid #2A2410")}>
+    <section data-section-pad style={css("max-width:1200px;margin:0 auto;padding:24px 24px")}>
+      <div data-gold-anchor style={css("background:linear-gradient(135deg,#0D0D0D 0%,#1A1508 50%,#0D0D0D 100%);border-radius:20px;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;border:1px solid #2A2410")}>
         <div>
           <div style={css("display:flex;align-items:center;gap:8px;margin-bottom:8px")}>
             <span style={css("width:8px;height:8px;border-radius:50%;background:" + ACCENT)} />
@@ -37,13 +37,13 @@ function GoldAnchor() {
             Precio spot XAU/USD · actualizado en tiempo real
           </div>
         </div>
-        <div style={css("display:flex;gap:20px;flex-wrap:wrap")}>
+        <div data-gold-prices style={css("display:flex;gap:20px;flex-wrap:wrap")}>
           <div style={css("text-align:center;min-width:120px")}>
             <div style={css("font:500 11px var(--font-mono);color:#8A8A80;text-transform:uppercase;margin-bottom:4px")}>Oro (XAU)</div>
             <div style={css("font:600 32px var(--font-mono);color:#E8D48B;letter-spacing:-0.02em")}>{fmtUSD(goldSpot)}</div>
             <div style={{ ...css("font:600 13px var(--font-mono)"), color: pos ? "#C9A227" : "#D14343" }}>{chStr} 24h</div>
           </div>
-          <div style={css("width:1px;background:#2A2410;align-self:stretch")} />
+          <div data-gold-divider style={css("width:1px;background:#2A2410;align-self:stretch")} />
           <div style={css("text-align:center;min-width:120px")}>
             <div style={css("font:500 11px var(--font-mono);color:#8A8A80;text-transform:uppercase;margin-bottom:4px")}>{TOKEN_SYMBOL}</div>
             <div style={css("font:600 32px var(--font-mono);color:#fff;letter-spacing:-0.02em")}>{fmtUSD(price)}</div>
@@ -102,7 +102,7 @@ function Activity() {
             <span style={css("flex:none;width:28px;height:28px;border-radius:8px;background:#F4F4F5;display:flex;align-items:center;justify-content:center;font:600 11px var(--font-mono);color:#8A8A94")}>
               {t.kind === "sell" ? "↘" : t.kind === "swap" ? "⇄" : "↗"}
             </span>
-            <span style={css("flex:1;font:400 13px var(--font-hanken);color:#5C5C66")}>
+            <span data-activity-text style={css("flex:1;font:400 13px var(--font-hanken);color:#5C5C66")}>
               <span style={css("font-family:var(--font-mono);color:#9A7B0A;font-size:11px")}>{t.id}</span>
               {" · "}
               <span style={css("font-family:var(--font-mono);color:#0D0D0D")}>
@@ -114,7 +114,7 @@ function Activity() {
                 : "—"}{" "}
               {t.receive_asset === "CGOLD" ? TOKEN_SYMBOL : t.receive_asset}
             </span>
-            <span style={css("font:400 11px var(--font-mono);color:#A8A8AE")}>{relTime(t.created_at)}</span>
+            <span data-activity-time style={css("font:400 11px var(--font-mono);color:#A8A8AE")}>{relTime(t.created_at)}</span>
           </div>
         ))}
       </div>
@@ -131,8 +131,8 @@ function Donut() {
     return seg;
   });
   return (
-    <section style={css("max-width:1200px;margin:0 auto;padding:48px 24px")}>
-      <div data-2col style={css("display:grid;grid-template-columns:0.9fr 1.1fr;gap:48px;align-items:center;background:#0D0D0D;border-radius:28px;padding:48px")}>
+    <section data-section-pad data-section-pad-lg style={css("max-width:1200px;margin:0 auto;padding:48px 24px")}>
+      <div data-2col data-donut-box style={css("display:grid;grid-template-columns:0.9fr 1.1fr;gap:48px;align-items:center;background:#0D0D0D;border-radius:28px;padding:48px")}>
         <div style={css("display:flex;flex-direction:column;align-items:center")}>
           <div style={css("position:relative;width:220px;height:220px")}>
             <svg viewBox="0 0 200 200" width="220" height="220" style={{ transform: "rotate(-90deg)" }}>
@@ -149,7 +149,7 @@ function Donut() {
         </div>
         <div>
           <div style={{ ...css("font:600 13px var(--font-mono);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:14px"), color: ACCENT }}>Tokenomics</div>
-          <h2 style={css("font:600 34px var(--font-hanken);letter-spacing:-0.035em;margin:0 0 14px;color:#fff")}>Oferta fija. Respaldo real. Sin quema.</h2>
+          <h2 data-h2 style={css("font:600 34px var(--font-hanken);letter-spacing:-0.035em;margin:0 0 14px;color:#fff")}>Oferta fija. Respaldo real. Sin quema.</h2>
           <p style={css("font:400 16px/1.55 var(--font-hanken);color:#B8B8BD;margin:0 0 22px;max-width:460px")}>
             Suministro total de {TOKEN_SUPPLY_LABEL} {TOKEN_SYMBOL}. No minable, no quemable. 70% para adquirentes, 20% stake estratégico del emisor y 10% liquidez operativa.
           </p>
@@ -253,7 +253,7 @@ export default function Home() {
 
   return (
     <main>
-      <section style={css("max-width:1200px;margin:0 auto;padding:72px 24px 40px")}>
+      <section data-hero-pad data-section-pad style={css("max-width:1200px;margin:0 auto;padding:72px 24px 40px")}>
         <div data-hero style={css("display:grid;grid-template-columns:1.05fr 0.95fr;gap:56px;align-items:center")}>
           <div>
             <div style={css("display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:22px")}>
@@ -321,7 +321,7 @@ export default function Home() {
       <Activity />
 
       <section style={css("max-width:1200px;margin:0 auto;padding:48px 24px")}>
-        <h2 style={css("font:600 38px var(--font-hanken);letter-spacing:-0.035em;margin:0 0 16px;max-width:720px")}>Crypto + TradFi + DeFi. Un solo activo.</h2>
+        <h2 data-h2 style={css("font:600 38px var(--font-hanken);letter-spacing:-0.035em;margin:0 0 16px;max-width:720px")}>Crypto + TradFi + DeFi. Un solo activo.</h2>
         <div data-2col style={css("display:grid;grid-template-columns:1.05fr 0.95fr;gap:40px;align-items:start;margin-bottom:40px")}>
           <p style={css("font:400 18px/1.6 var(--font-hanken);color:#5C5C66;margin:0;text-wrap:pretty")}>
             <strong style={css("color:#0D0D0D;font-weight:600")}>{TOKEN_SYMBOL} combina oro físico auditado</strong> con infraestructura bancaria internacional y liquidez on-chain instantánea. Un modelo híbrido pensado para revalorización sostenible — sin esquemas especulativos — orientado a inversores institucionales y patrimoniales.
@@ -336,7 +336,7 @@ export default function Home() {
           </div>
         </div>
         <div style={{ ...css("font:600 11px var(--font-mono);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px"), color: ACCENT }}>Modelo de valor</div>
-        <h3 style={css("font:600 27px var(--font-hanken);letter-spacing:-0.025em;margin:0 0 16px;max-width:700px")}>Respaldo tangible. Correlación con el oro. Liquidez permanente.</h3>
+        <h3 data-h3 style={css("font:600 27px var(--font-hanken);letter-spacing:-0.025em;margin:0 0 16px;max-width:700px")}>Respaldo tangible. Correlación con el oro. Liquidez permanente.</h3>
         <p style={css("font:400 18px/1.6 var(--font-hanken);color:#5C5C66;max-width:700px;margin:0 0 24px;text-wrap:pretty")}>
           Cuando el oro sube, <strong style={css("color:#0D0D0D;font-weight:600")}>{TOKEN_SYMBOL} lo refleja</strong>. Reservas auditables, estructura legal internacional y liquidación automatizada vía CRYPTOHOST garantizan un activo serio para quien busca preservar y hacer crecer patrimonio en la era digital.
         </p>
@@ -412,7 +412,7 @@ export default function Home() {
             </div>
           </div>
           <div style={css("display:flex;justify-content:center")}>
-            <div style={css("width:280px;height:560px;background:#0D0D0D;border-radius:42px;padding:11px;box-shadow:0 30px 70px -30px rgba(154,123,10,0.35)")}>
+            <div data-phone-mock style={css("width:280px;height:560px;background:#0D0D0D;border-radius:42px;padding:11px;box-shadow:0 30px 70px -30px rgba(154,123,10,0.35)")}>
               <div style={css("width:100%;height:100%;background:#fff;border-radius:32px;overflow:hidden;display:flex;flex-direction:column")}>
                 <div style={css("padding:18px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #F0F0F1")}>
                   <span style={css("font:700 16px var(--font-hanken);letter-spacing:-0.04em")}>Crypto<span style={{ color: "#9A7B0A" }}>Gold</span></span>

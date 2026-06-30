@@ -145,7 +145,7 @@ export default function CryptohostMonitor({ compact = false }: { compact?: boole
   return (
     <div style={css(`background:#0D0D0D;border:1px solid #2A2410;border-radius:${compact ? "20px" : "24px"};overflow:hidden`)}>
       {/* Header */}
-      <div style={css("padding:18px 22px 14px;border-bottom:1px solid #2A2410")}>
+      <div data-monitor-header style={css("padding:18px 22px 14px;border-bottom:1px solid #2A2410")}>
         <div style={css("display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap")}>
           <div>
             <div style={css("display:flex;align-items:center;gap:8px;margin-bottom:6px")}>
@@ -182,7 +182,7 @@ export default function CryptohostMonitor({ compact = false }: { compact?: boole
       <Ticker rows={rows} />
 
       {/* Filters */}
-      <div style={css("display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #2A2410;flex-wrap:wrap")}>
+      <div data-monitor-filters style={css("display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #2A2410;flex-wrap:wrap")}>
         <div style={css("display:flex;gap:6px;flex-wrap:wrap")}>
           {FILTERS.map((f) => (
             <button
@@ -199,6 +199,7 @@ export default function CryptohostMonitor({ compact = false }: { compact?: boole
         </div>
         <input
           type="search"
+          data-monitor-search
           placeholder="Buscar CGD-ID o wallet…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -206,8 +207,8 @@ export default function CryptohostMonitor({ compact = false }: { compact?: boole
         />
       </div>
 
-      {/* Table */}
-      <div style={css(`overflow:auto;${compact ? "max-height:340px" : "max-height:480px"}`)}>
+      {/* Table — desktop */}
+      <div data-cryptohost-table-wrap style={css(`overflow:auto;${compact ? "max-height:340px" : "max-height:480px"}`)}>
         <table style={css("width:100%;border-collapse:collapse;font:400 12px var(--font-hanken);min-width:720px")}>
           <thead style={css("position:sticky;top:0;background:#0D0D0D;z-index:1")}>
             <tr style={css("color:#8A8A80;text-align:left")}>
@@ -258,6 +259,42 @@ export default function CryptohostMonitor({ compact = false }: { compact?: boole
               ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Cards — mobile */}
+      <div data-cryptohost-cards style={css(`${compact ? "max-height:340px" : "max-height:480px"};overflow:auto`)}>
+        {loading && (
+          <div style={css("padding:32px 16px;color:#8A8A80;text-align:center;font:400 13px var(--font-hanken)")}>
+            Sincronizando registro CRYPTOHOST…
+          </div>
+        )}
+        {!loading && filtered.length === 0 && (
+          <div style={css("padding:32px 16px;color:#8A8A80;text-align:center;font:400 13px var(--font-hanken)")}>
+            Sin resultados para este filtro.
+          </div>
+        )}
+        {!loading &&
+          filtered.map((t) => (
+            <div key={t.id} style={css("padding:14px 16px;border-top:1px solid #1A1508")}>
+              <div style={css("display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px")}>
+                <span style={css("font:600 12px var(--font-mono);color:#E8D48B")}>{t.id}</span>
+                <span
+                  style={css(
+                    `font:600 10px var(--font-mono);text-transform:uppercase;color:${t.status === "confirmed" ? "#26A17B" : t.status === "failed" ? "#E05252" : "#C9A227"}`
+                  )}
+                >
+                  {t.status === "confirmed" ? "Confirmado" : t.status === "failed" ? "Fallido" : "Procesando"}
+                </span>
+              </div>
+              <div style={css("display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font:400 12px var(--font-hanken)")}>
+                <div><span style={css("color:#6B6B76")}>Operación</span><br /><span style={css("color:#E4E4E6")}>{KIND_LABEL[t.kind] ?? t.kind}</span></div>
+                <div><span style={css("color:#6B6B76")}>Importe</span><br /><span style={css("color:#fff")}>{formatAmount(t)}</span></div>
+                <div><span style={css("color:#6B6B76")}>Wallet</span><br /><span style={css("color:#9A9AA0;font-family:var(--font-mono);font-size:11px")}>{shortWallet(t.wallet)}</span></div>
+                <div><span style={css("color:#6B6B76")}>Red</span><br /><span style={css("color:#B8B8BD")}>{t.chain ?? "—"}</span></div>
+              </div>
+              <div style={css("margin-top:8px;font:400 11px var(--font-hanken);color:#9A9AA0")}>{relTime(t.created_at)}</div>
+            </div>
+          ))}
       </div>
 
       {rows.length < total && !query && filter === "all" && (

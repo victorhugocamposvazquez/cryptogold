@@ -28,7 +28,7 @@ export default function AdminDashboard() {
     <div>
       <div style={css("display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px;gap:16px;flex-wrap:wrap")}>
         <div>
-          <h1 style={css("font:700 32px var(--font-hanken);margin:0 0 8px;letter-spacing:-0.03em")}>Panel de control</h1>
+          <h1 data-ops-h1 style={css("font:700 32px var(--font-hanken);margin:0 0 8px;letter-spacing:-0.03em")}>Panel de control</h1>
           <p style={css("font:400 15px var(--font-hanken);color:#9A9AA0;margin:0")}>
             Motor de liquidación CryptoGold · servicio CRYPTOHOST
           </p>
@@ -57,6 +57,7 @@ export default function AdminDashboard() {
             Ver todas →
           </Link>
         </div>
+        <div data-admin-table-wrap data-table-wrap>
         <table style={css("width:100%;border-collapse:collapse;font:400 13px var(--font-hanken)")}>
           <thead>
             <tr style={css("color:#9A9AA0;text-align:left")}>
@@ -96,6 +97,7 @@ export default function AdminDashboard() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
     </div>
