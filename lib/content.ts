@@ -109,7 +109,7 @@ export const structuredBacking = {
 export const infraItems: { icon: string; title: string; desc: string; href: string }[] = [
   { icon: "⬡", title: "Smart contract verificable", desc: "Token único, auditado y publicado en exploradores de bloques.", href: "/docs/audit" },
   { icon: "◎", title: "Compra integrada", desc: "USDT, criptomonedas y fiat (Transak / MoonPay) en un clic.", href: "/comprar" },
-  { icon: "⇄", title: "CRYPTOHOST", desc: "Liquidación automatizada con historial de más de 5 millones de transferencias.", href: "/docs/cryptohost" },
+  { icon: "⇄", title: "CRYPTOHOST", desc: "Liquidación automatizada con historial de más de 5 millones de transferencias.", href: "/cryptohost" },
   { icon: "◉", title: "Soporte dedicado", desc: "Respuesta automatizada 24/7 y equipo humano cualificado el primer año.", href: "/docs/support" },
   { icon: "⚖", title: "Estructura legal", desc: "Entidad internacional y banca corporativa en hubs regulados.", href: "/docs/legal-structure" },
   { icon: "↗", title: "Visibilidad global", desc: "Registro CoinMarketCap y listing progresivo en exchanges.", href: "/docs/listings" },

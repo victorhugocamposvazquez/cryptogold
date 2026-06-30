@@ -14,7 +14,7 @@ import {
 } from "@/lib/brand";
 import { structuredBacking, infraItems, roadmapPhases, listingStages } from "@/lib/content";
 import { Hov } from "./ui";
-import CryptohostHistoryFeed from "./CryptohostHistoryFeed";
+import CryptohostMonitor from "./CryptohostMonitor";
 
 const statusColor = (s: "done" | "active" | "upcoming" | "planned") =>
   s === "done" ? "#26A17B" : s === "active" ? "#C9A227" : "#A8A8AE";
@@ -100,8 +100,11 @@ export function CryptohostSection() {
               </div>
             ))}
           </div>
-          <Hov as="button" onClick={() => router.push("/docs/cryptohost")} style="appearance:none;cursor:pointer;background:#C9A227;color:#0D0D0D;border:none;border-radius:12px;padding:14px 24px;font:600 15px var(--font-hanken)" hover="background:#E8D48B">
-            Conocer CRYPTOHOST
+          <Hov as="button" onClick={() => router.push("/cryptohost")} style="appearance:none;cursor:pointer;background:#C9A227;color:#0D0D0D;border:none;border-radius:12px;padding:14px 24px;font:600 15px var(--font-hanken);margin-right:10px" hover="background:#E8D48B">
+            Ver monitor en vivo
+          </Hov>
+          <Hov as="button" onClick={() => router.push("/docs/cryptohost")} style="appearance:none;cursor:pointer;background:transparent;color:#C9A227;border:1px solid #3A3010;border-radius:12px;padding:14px 24px;font:600 15px var(--font-hanken)" hover="border-color:#C9A227">
+            Documentación
           </Hov>
         </div>
         <div style={css("background:#1A1508;border:1px solid #2A2410;border-radius:20px;padding:24px")}>
@@ -114,11 +117,14 @@ export function CryptohostSection() {
           ))}
         </div>
       </div>
-      <CryptohostHistoryFeed />
+      <CryptohostMonitor compact />
       <p style={css("text-align:center;margin:16px 0 0;font:400 12px var(--font-hanken);color:#6B6B76")}>
-        Operadores CRYPTOHOST ·{" "}
-        <Link href="/admin" prefetch style={css("color:#9A7B0A;text-decoration:none;font-weight:600")}>
-          panel de administración
+        <Link href="/cryptohost" prefetch style={css("color:#9A7B0A;text-decoration:none;font-weight:600")}>
+          Registro completo de 5.000 transferencias →
+        </Link>
+        {" · "}
+        <Link href="/admin" prefetch style={css("color:#6B6B76;text-decoration:none")}>
+          panel operadores
         </Link>
       </p>
     </section>

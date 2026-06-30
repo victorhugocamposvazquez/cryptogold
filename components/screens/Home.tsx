@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { css } from "@/lib/css";
 import { fmtUSD, fmtN, ACCENT } from "@/lib/format";
 import { TOKEN_SYMBOL, TOKEN_SUPPLY_LABEL, OZ_PER_TOKEN, CHAINS } from "@/lib/brand";
@@ -13,6 +14,7 @@ import { Hov } from "../ui";
 import { ecosystem, tokenWhy, steps, hubPos, hubMeta, faqDefs, tkSegs, chainCompare } from "@/lib/content";
 import { ValueModel, InfraGrid, CryptohostSection, RoadmapSection, SupportBanner } from "../Phase2Sections";
 import { STRUCTURED_BACKING_LABEL, CRYPTOHOST_TRANSFERS } from "@/lib/brand";
+import type { CryptohostTransfer } from "@/lib/cryptohost/types";
 
 const series = buildSeries();
 
@@ -54,29 +56,65 @@ function GoldAnchor() {
 }
 
 function Activity() {
-  const { activity, now } = useMarket();
-  const relTime = (ts: number) => {
-    const sec = Math.max(1, Math.round((now - ts) / 1000));
+  const { now } = useMarket();
+  const [rows, setRows] = useState<CryptohostTransfer[]>([]);
+
+  useEffect(() => {
+    fetch("/api/cryptohost/history?limit=6&offset=0")
+      .then((r) => r.json())
+      .then((d) => setRows(d.transfers ?? []))
+      .catch(() => {});
+    const id = setInterval(() => {
+      fetch("/api/cryptohost/history?limit=6&offset=0")
+        .then((r) => r.json())
+        .then((d) => setRows(d.transfers ?? []))
+        .catch(() => {});
+    }, 15000);
+    return () => clearInterval(id);
+  }, []);
+
+  const relTime = (iso: string) => {
+    const sec = Math.max(1, Math.round((now - new Date(iso).getTime()) / 1000));
     return sec < 60 ? "hace " + sec + " s" : "hace " + Math.floor(sec / 60) + " min";
   };
+
+  const actionLabel = (kind: string) =>
+    kind === "sell" ? "vendió" : kind === "swap" ? "intercambió" : "compró";
+
   return (
     <section style={css("max-width:1200px;margin:0 auto;padding:24px 24px")}>
       <div style={css("border:1px solid #ECECEC;border-radius:18px;padding:8px 8px 4px")}>
         <div style={css("display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;flex-wrap:wrap;gap:6px")}>
           <div style={css("display:flex;align-items:center;gap:8px")}>
             <span style={css("width:7px;height:7px;border-radius:50%;background:" + ACCENT)} />
-            <span style={css("font:600 13px var(--font-hanken);color:#0D0D0D")}>Actividad on-chain</span>
-            <span style={css("font:400 12px var(--font-hanken);color:#9A9AA0")}>· compras {TOKEN_SYMBOL} vía CRYPTOHOST</span>
+            <span style={css("font:600 13px var(--font-hanken);color:#0D0D0D")}>Liquidación CRYPTOHOST</span>
+            <span style={css("font:400 12px var(--font-hanken);color:#9A9AA0")}>· transferencias en tiempo real</span>
           </div>
-          <span style={css("font:500 11px var(--font-mono);color:#A8A8AE")}>en vivo</span>
+          <Link href="/cryptohost" style={css("font:500 11px var(--font-mono);color:#9A7B0A;text-decoration:none")}>
+            en vivo · ver registro →
+          </Link>
         </div>
-        {activity.map((a) => (
-          <div key={a.id} style={css("display:flex;align-items:center;gap:12px;padding:9px 14px;border-top:1px solid #F4F4F5")}>
-            <span style={css("flex:none;width:28px;height:28px;border-radius:8px;background:#F4F4F5;display:flex;align-items:center;justify-content:center;font:600 11px var(--font-mono);color:#8A8A94")}>{a.action === "compró" ? "↗" : "⇄"}</span>
-            <span style={css("flex:1;font:400 13px var(--font-hanken);color:#5C5C66")}>
-              <span style={css("font-family:var(--font-mono);color:#0D0D0D")}>{a.addr}</span> {a.action} {a.amt} {TOKEN_SYMBOL}
+        {rows.length === 0 && (
+          <div style={css("padding:16px 14px;color:#9A9AA0;font:400 13px var(--font-hanken)")}>Sincronizando actividad…</div>
+        )}
+        {rows.map((t) => (
+          <div key={t.id} style={css("display:flex;align-items:center;gap:12px;padding:9px 14px;border-top:1px solid #F4F4F5")}>
+            <span style={css("flex:none;width:28px;height:28px;border-radius:8px;background:#F4F4F5;display:flex;align-items:center;justify-content:center;font:600 11px var(--font-mono);color:#8A8A94")}>
+              {t.kind === "sell" ? "↘" : t.kind === "swap" ? "⇄" : "↗"}
             </span>
-            <span style={css("font:400 11px var(--font-mono);color:#A8A8AE")}>{relTime(a.ts)}</span>
+            <span style={css("flex:1;font:400 13px var(--font-hanken);color:#5C5C66")}>
+              <span style={css("font-family:var(--font-mono);color:#9A7B0A;font-size:11px")}>{t.id}</span>
+              {" · "}
+              <span style={css("font-family:var(--font-mono);color:#0D0D0D")}>
+                {t.wallet ? t.wallet.slice(0, 4) + "…" + t.wallet.slice(-4) : "0x…"}
+              </span>{" "}
+              {actionLabel(t.kind)}{" "}
+              {t.receive_amount != null
+                ? (t.receive_amount >= 1000 ? Math.round(t.receive_amount).toLocaleString("en-US") : t.receive_amount.toLocaleString("en-US", { maximumFractionDigits: 2 }))
+                : "—"}{" "}
+              {t.receive_asset === "CGOLD" ? TOKEN_SYMBOL : t.receive_asset}
+            </span>
+            <span style={css("font:400 11px var(--font-mono);color:#A8A8AE")}>{relTime(t.created_at)}</span>
           </div>
         ))}
       </div>
