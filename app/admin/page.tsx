@@ -35,9 +35,14 @@ export default function AdminDashboard() {
           </p>
         </div>
         {status && (
-          <div style={css("text-align:right")}>
-            <StatusBadge status={status.status} />
-            <p style={css("font:400 13px var(--font-hanken);color:#9A9AA0;margin:8px 0 0;max-width:280px")}>{status.message}</p>
+          <div style={css("display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap")}>
+            <Link href="/admin/transfers/new" style={css("font:600 13px var(--font-hanken);color:#0D0D0D;background:#C9A227;text-decoration:none;border-radius:10px;padding:10px 16px")}>
+              + Nueva transferencia
+            </Link>
+            <div style={css("text-align:right")}>
+              <StatusBadge status={status.status} />
+              <p style={css("font:400 13px var(--font-hanken);color:#9A9AA0;margin:8px 0 0;max-width:280px")}>{status.message}</p>
+            </div>
           </div>
         )}
       </div>

@@ -8,6 +8,8 @@ import { Logo } from "@/components/ui";
 const NAV = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/transfers", label: "Transferencias" },
+  { href: "/admin/transfers/new", label: "Nueva transferencia" },
+  { href: "/cryptohost", label: "Monitor público" },
   { href: "/docs/status", label: "Estado público" },
   { href: "/", label: "← Sitio" },
 ];
@@ -27,7 +29,12 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         </div>
         <nav style={css("display:flex;flex-direction:column;gap:4px")}>
           {NAV.map((item) => {
-            const active = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href) && item.href !== "/";
+            const active =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : item.href === "/admin/transfers"
+                  ? pathname === "/admin/transfers"
+                  : pathname.startsWith(item.href) && item.href !== "/";
             return (
               <Link
                 key={item.href}

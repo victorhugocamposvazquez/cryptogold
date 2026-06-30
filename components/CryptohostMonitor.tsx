@@ -163,11 +163,27 @@ export default function CryptohostMonitor({ compact = false }: { compact?: boole
             </p>
           </div>
           {!compact && (
+            <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
+              <Link
+                href="/admin/transfers/new"
+                style={css("font:600 13px var(--font-hanken);color:#0D0D0D;background:#C9A227;text-decoration:none;border-radius:10px;padding:8px 14px")}
+              >
+                + Nueva transferencia
+              </Link>
+              <Link
+                href="/comprar"
+                style={css("font:500 13px var(--font-hanken);color:#C9A227;text-decoration:none;border:1px solid #3A3010;border-radius:10px;padding:8px 14px")}
+              >
+                Liquidar vía compra →
+              </Link>
+            </div>
+          )}
+          {compact && (
             <Link
-              href="/admin"
-              style={css("font:500 12px var(--font-hanken);color:#9A7B0A;text-decoration:none;border:1px solid #3A3010;border-radius:10px;padding:8px 14px")}
+              href="/admin/transfers/new"
+              style={css("font:600 12px var(--font-hanken);color:#0D0D0D;background:#C9A227;text-decoration:none;border-radius:10px;padding:8px 12px;white-space:nowrap")}
             >
-              Panel operadores →
+              + Nueva
             </Link>
           )}
         </div>
