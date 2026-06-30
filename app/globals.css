@@ -118,18 +118,33 @@ button { font-family: inherit; }
   [data-support-actions] a { flex: 1; text-align: center; }
 
   /* CRYPTOHOST / Admin ops zone */
-  [data-ops-shell] { flex-direction: column; }
+  [data-ops-shell] { flex-direction: column; isolation: isolate; }
+  [data-ops-content] {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  [data-ops-shell][data-ops-open] [data-ops-content] {
+    pointer-events: none;
+    user-select: none;
+  }
   [data-ops-sidebar] {
     position: fixed !important;
     left: 0;
     top: 0;
     bottom: 0;
-    z-index: 120;
+    z-index: 300;
     width: min(288px, 88vw) !important;
     height: 100vh !important;
+    height: 100dvh !important;
     transform: translateX(-105%);
     transition: transform 0.25s ease;
     box-shadow: 8px 0 32px rgba(0, 0, 0, 0.45);
+    background: #0D0D0D;
+    -webkit-overflow-scrolling: touch;
   }
   [data-ops-shell][data-ops-open] [data-ops-sidebar] {
     transform: translateX(0);
@@ -138,7 +153,7 @@ button { font-family: inherit; }
     display: none;
     position: fixed;
     inset: 0;
-    z-index: 110;
+    z-index: 200;
     background: rgba(0, 0, 0, 0.55);
     border: none;
     padding: 0;
@@ -157,7 +172,7 @@ button { font-family: inherit; }
     top: 0;
     left: 0;
     right: 0;
-    z-index: 90;
+    z-index: 2;
     height: var(--ops-top-h);
     padding: 0 14px;
     padding-top: env(safe-area-inset-top);
@@ -176,7 +191,7 @@ button { font-family: inherit; }
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 90;
+    z-index: 2;
     height: calc(var(--ops-bottom-h) + env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
     background: rgba(13, 13, 13, 0.96);
