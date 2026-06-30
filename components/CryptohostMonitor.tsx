@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { css } from "@/lib/css";
 import { CRYPTOHOST_TRANSFERS, TOKEN_SYMBOL } from "@/lib/brand";
 import type { CryptohostTransfer, TransferKind } from "@/lib/cryptohost/types";
@@ -162,30 +161,6 @@ export default function CryptohostMonitor({ compact = false }: { compact?: boole
               {CRYPTOHOST_TRANSFERS} operaciones históricas · {registry} visibles en registro · IDs trazables CGD
             </p>
           </div>
-          {!compact && (
-            <div style={css("display:flex;gap:8px;flex-wrap:wrap")}>
-              <Link
-                href="/admin/transfers/new"
-                style={css("font:600 13px var(--font-hanken);color:#0D0D0D;background:#C9A227;text-decoration:none;border-radius:10px;padding:8px 14px")}
-              >
-                + Nueva transferencia
-              </Link>
-              <Link
-                href="/comprar"
-                style={css("font:500 13px var(--font-hanken);color:#C9A227;text-decoration:none;border:1px solid #3A3010;border-radius:10px;padding:8px 14px")}
-              >
-                Liquidar vía compra →
-              </Link>
-            </div>
-          )}
-          {compact && (
-            <Link
-              href="/admin/transfers/new"
-              style={css("font:600 12px var(--font-hanken);color:#0D0D0D;background:#C9A227;text-decoration:none;border-radius:10px;padding:8px 12px;white-space:nowrap")}
-            >
-              + Nueva
-            </Link>
-          )}
         </div>
 
         <div style={css("display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:16px")}>

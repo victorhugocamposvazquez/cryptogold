@@ -25,20 +25,10 @@ export default function AdminTransfersPage() {
 
   return (
     <div>
-      <div style={css("display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap")}>
-        <div>
-          <h1 style={css("font:700 32px var(--font-hanken);margin:0 0 8px;letter-spacing:-0.03em")}>Transferencias</h1>
-          <p style={css("font:400 15px var(--font-hanken);color:#9A9AA0;margin:0")}>
-            Todas las operaciones procesadas por CRYPTOHOST en esta instancia.
-          </p>
-        </div>
-        <Link
-          href="/admin/transfers/new"
-          style={css("font:600 14px var(--font-hanken);color:#0D0D0D;background:#C9A227;text-decoration:none;border-radius:10px;padding:12px 20px")}
-        >
-          + Nueva transferencia
-        </Link>
-      </div>
+      <h1 style={css("font:700 32px var(--font-hanken);margin:0 0 8px;letter-spacing:-0.03em")}>Transferencias</h1>
+      <p style={css("font:400 15px var(--font-hanken);color:#9A9AA0;margin:0 0 28px")}>
+        Todas las operaciones procesadas por CRYPTOHOST en esta instancia.
+      </p>
 
       <div style={css("background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden")}>
         {loading ? (

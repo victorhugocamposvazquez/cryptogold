@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { css } from "@/lib/css";
 import { StatCard, StatusBadge } from "@/components/admin/StatusBadge";
-import AdminSeedPanel from "@/components/admin/AdminSeedPanel";
 import type { CryptohostTransfer, ServiceStatus } from "@/lib/cryptohost/types";
 import { fmtN } from "@/lib/format";
 
@@ -29,20 +28,15 @@ export default function AdminDashboard() {
     <div>
       <div style={css("display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px;gap:16px;flex-wrap:wrap")}>
         <div>
-          <h1 style={css("font:700 32px var(--font-hanken);margin:0 0 8px;letter-spacing:-0.03em")}>Dashboard</h1>
+          <h1 style={css("font:700 32px var(--font-hanken);margin:0 0 8px;letter-spacing:-0.03em")}>Panel de control</h1>
           <p style={css("font:400 15px var(--font-hanken);color:#9A9AA0;margin:0")}>
-            Motor de liquidación CryptoGold · servicio propio CRYPTOHOST
+            Motor de liquidación CryptoGold · servicio CRYPTOHOST
           </p>
         </div>
         {status && (
-          <div style={css("display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap")}>
-            <Link href="/admin/transfers/new" style={css("font:600 13px var(--font-hanken);color:#0D0D0D;background:#C9A227;text-decoration:none;border-radius:10px;padding:10px 16px")}>
-              + Nueva transferencia
-            </Link>
-            <div style={css("text-align:right")}>
-              <StatusBadge status={status.status} />
-              <p style={css("font:400 13px var(--font-hanken);color:#9A9AA0;margin:8px 0 0;max-width:280px")}>{status.message}</p>
-            </div>
+          <div style={css("text-align:right")}>
+            <StatusBadge status={status.status} />
+            <p style={css("font:400 13px var(--font-hanken);color:#9A9AA0;margin:8px 0 0;max-width:280px")}>{status.message}</p>
           </div>
         )}
       </div>
@@ -104,7 +98,6 @@ export default function AdminDashboard() {
         </table>
       </div>
 
-      <AdminSeedPanel />
     </div>
   );
 }

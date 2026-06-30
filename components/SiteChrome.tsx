@@ -9,10 +9,9 @@ import { WalletModal, ProviderModal, SuccessModal, Toast } from "@/components/Mo
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith("/admin");
-  const isCryptohost = pathname?.startsWith("/cryptohost");
+  const isOpsZone = pathname?.startsWith("/admin") || pathname?.startsWith("/cryptohost");
 
-  if (isAdmin || isCryptohost) {
+  if (isOpsZone) {
     return <>{children}</>;
   }
 

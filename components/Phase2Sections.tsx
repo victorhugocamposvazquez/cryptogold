@@ -101,7 +101,7 @@ export function CryptohostSection() {
             ))}
           </div>
           <Hov as="button" onClick={() => router.push("/cryptohost")} style="appearance:none;cursor:pointer;background:#C9A227;color:#0D0D0D;border:none;border-radius:12px;padding:14px 24px;font:600 15px var(--font-hanken);margin-right:10px" hover="background:#E8D48B">
-            Ver monitor en vivo
+            Centro CRYPTOHOST
           </Hov>
           <Hov as="button" onClick={() => router.push("/docs/cryptohost")} style="appearance:none;cursor:pointer;background:transparent;color:#C9A227;border:1px solid #3A3010;border-radius:12px;padding:14px 24px;font:600 15px var(--font-hanken)" hover="border-color:#C9A227">
             Documentación
@@ -120,11 +120,7 @@ export function CryptohostSection() {
       <CryptohostMonitor compact />
       <p style={css("text-align:center;margin:16px 0 0;font:400 12px var(--font-hanken);color:#6B6B76")}>
         <Link href="/cryptohost" prefetch style={css("color:#9A7B0A;text-decoration:none;font-weight:600")}>
-          Registro completo de 5.000 transferencias →
-        </Link>
-        {" · "}
-        <Link href="/admin" prefetch style={css("color:#6B6B76;text-decoration:none")}>
-          panel operadores
+          Centro de operaciones CRYPTOHOST →
         </Link>
       </p>
     </section>
