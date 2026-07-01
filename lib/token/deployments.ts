@@ -2,10 +2,14 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { randomUUID } from "crypto";
 import type { BnbNetwork } from "@/lib/bnb";
-import { isSupabaseAdminConfigured } from "@/lib/env";
 import type { DeployRecord } from "./types";
+import {
+  assertPersistentTokenStorage,
+  canUseEphemeralTokenStorage,
+  getTokenStorageBackend,
+} from "./storage";
 
-const DATA_DIR = process.env.VERCEL ? join("/tmp", "cryptogold") : join(process.cwd(), "data");
+const DATA_DIR = join(process.cwd(), "data");
 const FILE = join(DATA_DIR, "token-deployments.json");
 
 type Store = { deployments: DeployRecord[] };
@@ -72,7 +76,9 @@ function rowToRecord(row: DeployRow): DeployRecord {
   };
 }
 
-function recordToRow(entry: Omit<DeployRecord, "id" | "createdAt" | "active"> & { id: string; createdAt: string; active: boolean }): DeployRow {
+function recordToRow(
+  entry: Omit<DeployRecord, "id" | "createdAt" | "active"> & { id: string; createdAt: string; active: boolean }
+): DeployRow {
   return {
     id: entry.id,
     network: entry.network,
@@ -101,10 +107,6 @@ async function listFromSupabase(network?: BnbNetwork): Promise<DeployRecord[]> {
   return (data as DeployRow[]).map(rowToRecord);
 }
 
-function useSupabaseStorage(): boolean {
-  return isSupabaseAdminConfigured();
-}
-
 async function appendToSupabase(entry: Omit<DeployRecord, "id" | "createdAt" | "active">): Promise<DeployRecord> {
   const supabase = await adminDb();
   const { error: offErr } = await supabase
@@ -123,6 +125,12 @@ async function appendToSupabase(entry: Omit<DeployRecord, "id" | "createdAt" | "
 
   const { error } = await supabase.from("token_deployments").insert(recordToRow(row));
   if (error) throw new Error(error.message);
+
+  const active = await getActiveDeployment(entry.network);
+  if (!active || active.address.toLowerCase() !== row.address.toLowerCase()) {
+    throw new Error("El contrato se insertó pero no quedó activo en Supabase. Revisa la tabla token_deployments.");
+  }
+
   return row;
 }
 
@@ -151,8 +159,11 @@ async function setActiveInSupabase(id: string, network: BnbNetwork): Promise<Dep
 }
 
 export async function listDeployments(network?: BnbNetwork): Promise<DeployRecord[]> {
-  if (useSupabaseStorage()) {
+  if (getTokenStorageBackend() === "supabase") {
     return listFromSupabase(network);
+  }
+  if (!canUseEphemeralTokenStorage()) {
+    return [];
   }
   const all = loadFile().deployments;
   if (!network) return all;
@@ -167,7 +178,9 @@ export async function getActiveDeployment(network: BnbNetwork): Promise<DeployRe
 export async function appendDeployment(
   entry: Omit<DeployRecord, "id" | "createdAt" | "active">
 ): Promise<DeployRecord> {
-  if (useSupabaseStorage()) {
+  assertPersistentTokenStorage("Guardar contrato activo");
+
+  if (getTokenStorageBackend() === "supabase") {
     return appendToSupabase(entry);
   }
 
@@ -188,7 +201,9 @@ export async function appendDeployment(
 }
 
 export async function setActiveDeployment(id: string, network: BnbNetwork): Promise<DeployRecord | null> {
-  if (useSupabaseStorage()) {
+  assertPersistentTokenStorage("Activar contrato");
+
+  if (getTokenStorageBackend() === "supabase") {
     return setActiveInSupabase(id, network);
   }
 
@@ -202,3 +217,5 @@ export async function setActiveDeployment(id: string, network: BnbNetwork): Prom
   saveFile(store);
   return found;
 }
+
+export { getTokenStorageBackend };

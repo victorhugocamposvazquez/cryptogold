@@ -399,6 +399,13 @@ export default function TokenAdminPanel() {
         <>
       <WalletConnectBar ownerAddress={stats?.owner} />
 
+      {stats?.registry?.storageBackend === "ephemeral" && (
+        <div style={css("background:rgba(224,82,82,0.12);border:1px solid rgba(224,82,82,0.35);color:#ffb4b4;border-radius:12px;padding:14px 16px;margin-bottom:20px;font:500 14px var(--font-hanken)")}>
+          {stats.registry.setupHint ||
+            "Los datos no persisten en Vercel sin SUPABASE_SERVICE_ROLE_KEY. Al refrescar perderás el contrato activo."}
+        </div>
+      )}
+
       {error && (
         <div style={css("background:rgba(224,82,82,0.12);border:1px solid rgba(224,82,82,0.35);color:#ffb4b4;border-radius:12px;padding:14px 16px;margin-bottom:20px;font:500 14px var(--font-hanken)")}>
           {error}

@@ -41,7 +41,7 @@ export type TokenStats = {
   registry?: {
     supabaseConfigured: boolean;
     supabaseAdminConfigured: boolean;
-    storageBackend: "supabase" | "file";
+    storageBackend: "supabase" | "local-file" | "ephemeral";
     envContractPinned: boolean;
     deploymentCount: number;
     activeDeploymentId: string | null;

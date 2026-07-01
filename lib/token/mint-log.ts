@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
-import { isSupabaseAdminConfigured } from "@/lib/env";
 import { getActiveNetwork, getContractAddressFromEnv } from "@/lib/network-profiles";
 import { getActiveDeployment } from "./deployments";
+import { assertPersistentTokenStorage, getTokenStorageBackend } from "./storage";
 import type { MintLogEntry } from "./types";
 
 const MAX = 200;
@@ -44,13 +44,15 @@ async function resolveContractForLog(): Promise<string | null> {
 }
 
 export async function appendMintLog(entry: Omit<MintLogEntry, "id" | "createdAt">): Promise<MintLogEntry> {
+  assertPersistentTokenStorage("Registrar mint");
+
   const row: MintLogEntry = {
     id: `MNT-${randomUUID().slice(0, 8).toUpperCase()}`,
     createdAt: new Date().toISOString(),
     ...entry,
   };
 
-  if (isSupabaseAdminConfigured()) {
+  if (getTokenStorageBackend() === "supabase") {
     const contract = await resolveContractForLog();
     if (!contract) throw new Error("No hay contrato activo para registrar el mint");
     const supabase = await adminDb();
@@ -75,7 +77,7 @@ export async function appendMintLog(entry: Omit<MintLogEntry, "id" | "createdAt"
 }
 
 export async function listMintLogs(limit = 50): Promise<MintLogEntry[]> {
-  if (isSupabaseAdminConfigured()) {
+  if (getTokenStorageBackend() === "supabase") {
     const supabase = await adminDb();
     const { data, error } = await supabase
       .from("token_mints")
