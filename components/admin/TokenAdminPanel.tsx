@@ -155,6 +155,7 @@ export default function TokenAdminPanel() {
   const [tab, setTab] = useState<Tab>("manage");
   const [stats, setStats] = useState<TokenStats | null>(null);
   const [mints, setMints] = useState<MintLogEntry[]>([]);
+  const [mintsLoadError, setMintsLoadError] = useState("");
   const [loading, setLoading] = useState(true);
   const [minting, setMinting] = useState(false);
   const [error, setError] = useState("");
@@ -182,6 +183,10 @@ export default function TokenAdminPanel() {
       if (mintsRes.ok) {
         const mintsData = await mintsRes.json();
         setMints(mintsData.mints ?? []);
+        setMintsLoadError("");
+      } else {
+        const mintsData = await mintsRes.json().catch(() => ({}));
+        setMintsLoadError(mintsData.error || "No se pudo cargar el historial de mints");
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error de carga");
@@ -235,7 +240,11 @@ export default function TokenAdminPanel() {
 
       if (useWallet) {
         if (!stats?.contractAddress || !wallet.walletClient || !wallet.publicClient || !wallet.address) {
-          throw new Error("Wallet o contrato no disponible");
+          throw new Error(
+            wallet.walletLoading
+              ? "Espera a que MetaMask termine de conectar"
+              : "Conecta la wallet owner en BSC Testnet (revisa la lista de requisitos arriba)"
+          );
         }
         if (!isAddress(to.trim())) throw new Error("Dirección destino inválida");
 
@@ -261,7 +270,12 @@ export default function TokenAdminPanel() {
           }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Mint fallido");
+        if (!res.ok) {
+          throw new Error(
+            `${data.error || "Mint on-chain OK, pero no se registró en el backoffice"}. Tx: ${txHash}`
+          );
+        }
+        if (data.mint) setMints((prev) => [data.mint as MintLogEntry, ...prev.filter((m) => m.id !== data.mint.id)]);
         setSuccess(`Mint OK · ${data.mint.id} · tx ${String(data.mint.txHash).slice(0, 10)}… (wallet)`);
       } else {
         const res = await fetch("/api/token/mint", {
@@ -272,6 +286,7 @@ export default function TokenAdminPanel() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Mint fallido");
+        if (data.mint) setMints((prev) => [data.mint as MintLogEntry, ...prev.filter((m) => m.id !== data.mint.id)]);
         setSuccess(`Mint OK · ${data.mint.id} · tx ${data.mint.txHash.slice(0, 10)}… (servidor)`);
       }
 
@@ -294,6 +309,43 @@ export default function TokenAdminPanel() {
     wallet.isOwner(stats?.owner);
   const serverCanMint = stats?.configured && stats.operatorIsOwner;
   const canMint = walletCanMint || serverCanMint;
+
+  const mintChecks = stats?.configured
+    ? [
+        { ok: true, label: "Contrato activo" },
+        {
+          ok: wallet.isConnected,
+          label: wallet.isConnected
+            ? `MetaMask conectada · ${wallet.address?.slice(0, 6)}…${wallet.address?.slice(-4)}`
+            : "Conectar MetaMask arriba",
+        },
+        {
+          ok: wallet.isCorrectChain,
+          label: wallet.isCorrectChain
+            ? `Red correcta · ${wallet.targetChainLabel}`
+            : `Cambiar a ${wallet.targetChainLabel} (usa el botón de la barra wallet)`,
+        },
+        {
+          ok: wallet.isConnected && wallet.isOwner(stats?.owner),
+          label:
+            !wallet.isConnected
+              ? "Conectar la wallet owner (no la wallet que recibe tokens)"
+              : wallet.isOwner(stats?.owner)
+                ? `Eres owner · ${stats?.owner?.slice(0, 6)}…${stats?.owner?.slice(-4)}`
+                : `Cuenta incorrecta. Owner del contrato: ${stats?.owner}`,
+        },
+        {
+          ok: !wallet.isConnected || wallet.walletReady,
+          label: wallet.walletLoading
+            ? "Preparando wallet…"
+            : wallet.walletReady
+              ? "Wallet lista para firmar"
+              : wallet.isConnected
+                ? "Wallet no lista — reconecta MetaMask o recarga"
+                : "Wallet lista para firmar",
+        },
+      ]
+    : [];
 
   const explorerBase = stats?.explorer ?? "https://testnet.bscscan.com";
 
@@ -398,14 +450,21 @@ export default function TokenAdminPanel() {
 
       {stats?.configured && !canMint && (
         <div style={css("background:#161616;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;margin-bottom:24px;font:400 14px var(--font-hanken);color:#C8C8CE")}>
-          Conecta MetaMask con la wallet <strong style={css("color:#E8D48B")}>owner</strong> del contrato
-          {stats.owner ? (
-            <>
-              {" "}
-              (<span style={css("font-family:var(--font-mono)")}>{stats.owner.slice(0, 10)}…</span>)
-            </>
-          ) : null}{" "}
-          o configura <code style={css("font-family:var(--font-mono);color:#C9A227")}>TOKEN_OWNER_PRIVATE_KEY</code> en Vercel (legacy).
+          <div style={css("font:600 14px var(--font-hanken);color:#E8D48B;margin-bottom:10px")}>
+            Para mintear solo puede firmar la wallet <strong>owner</strong> del contrato (no la wallet destino del mint).
+          </div>
+          <ul style={css("margin:0;padding-left:18px;line-height:1.7")}>
+            {mintChecks.map((c) => (
+              <li key={c.label} style={css(`color:${c.ok ? "#9dffd0" : "#ffb4b4"}`)}>
+                {c.ok ? "✓" : "○"} {c.label}
+              </li>
+            ))}
+          </ul>
+          {serverCanMint && (
+            <p style={css("margin:12px 0 0;font:400 13px;color:#9A9AA0")}>
+              Alternativa: mint por servidor (clave en Vercel). Recomendado: conectar wallet owner arriba.
+            </p>
+          )}
         </div>
       )}
 
@@ -540,10 +599,18 @@ export default function TokenAdminPanel() {
 
       <div style={css("background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden")}>
         <div style={css("padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.08);font:600 16px var(--font-hanken)")}>
-          Mints desde este backoffice (sesión)
+          Historial de mints (Supabase)
         </div>
+        {mintsLoadError && (
+          <p style={css("padding:16px 20px 0;margin:0;color:#ffb4b4;font:400 13px var(--font-hanken)")}>
+            {mintsLoadError}. Comprueba que exista la tabla <code style={css("font-family:var(--font-mono)")}>token_mints</code> en Supabase.
+          </p>
+        )}
         {mints.length === 0 ? (
-          <p style={css("padding:20px;margin:0;color:#6B6B76;font:400 14px var(--font-hanken)")}>Aún no hay mints registrados en esta instancia.</p>
+          <p style={css("padding:20px;margin:0;color:#6B6B76;font:400 14px var(--font-hanken)")}>
+            Aún no hay mints en el registro. Si ya minteaste on-chain, pulsa «Actualizar» o revisa que{" "}
+            <code style={css("font-family:var(--font-mono);color:#9A9AA0")}>SUPABASE_SERVICE_ROLE_KEY</code> esté en Vercel.
+          </p>
         ) : (
           <div data-admin-table-wrap data-table-wrap>
             <table style={css("width:100%;border-collapse:collapse;font:400 13px var(--font-hanken);min-width:640px")}>

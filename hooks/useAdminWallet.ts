@@ -16,16 +16,17 @@ export function useAdminWallet() {
   const { connect, isPending: isConnectPending, error: connectError, reset: resetConnect } = useConnect();
   const { disconnect } = useDisconnect();
   const { switchChain, isPending: isSwitchPending } = useSwitchChain();
-  const { data: walletClient, isLoading: walletLoading } = useWalletClient();
-  const publicClient = usePublicClient();
 
   const targetChainId = getTargetChainId();
   const targetChainLabel = getTargetChainLabel();
   const isCorrectChain = !isConnected || chainId === targetChainId;
 
+  const { data: walletClient, isLoading: walletLoading } = useWalletClient({ chainId: targetChainId });
+  const publicClient = usePublicClient({ chainId: targetChainId });
+
   function connectWallet() {
     resetConnect();
-    connect({ connector: adminWalletConnector });
+    connect({ connector: adminWalletConnector, chainId: targetChainId });
   }
 
   async function switchToTargetChain() {
@@ -48,7 +49,8 @@ export function useAdminWallet() {
     targetChain: getTargetChain(),
     walletClient: walletClient ?? null,
     publicClient: publicClient ?? null,
-    walletReady: !!walletClient && !walletLoading,
+    walletLoading,
+    walletReady: isConnected && isCorrectChain && !!walletClient && !walletLoading,
     connectWallet,
     connectError,
     disconnect,

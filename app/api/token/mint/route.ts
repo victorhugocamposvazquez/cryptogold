@@ -12,7 +12,13 @@ export async function GET(req: Request) {
   if (!verifyAdminRequest(req)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  return NextResponse.json({ mints: await getMintHistory(100) });
+  try {
+    const mints = await getMintHistory(100);
+    return NextResponse.json({ mints });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Error cargando mints";
+    return NextResponse.json({ error: message, mints: [] }, { status: 500 });
+  }
 }
 
 export async function POST(req: Request) {
