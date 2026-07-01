@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   return NextResponse.json({
-    deployments: getDeploymentHistory(),
+    deployments: await getDeploymentHistory(),
     deployerConfigured: isTokenDeployerConfigured(),
   });
 }
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     if (body.action === "activate") {
-      const record = activateDeployment(String(body.id ?? ""));
+      const record = await activateDeployment(String(body.id ?? ""));
       if (!record) return NextResponse.json({ error: "Despliegue no encontrado" }, { status: 404 });
       return NextResponse.json({ ok: true, deployment: record });
     }

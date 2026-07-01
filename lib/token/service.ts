@@ -32,8 +32,8 @@ function fmtTokens(wei: bigint): string {
 export async function getTokenStats(): Promise<TokenStats> {
   const cfg = getBnbChainConfig();
   const network = getActiveNetwork();
-  const contractAddress = getContractAddress();
-  const addressSource = getContractAddressSource();
+  const contractAddress = await getContractAddress();
+  const addressSource = await getContractAddressSource();
   const operator = getOperatorAccount();
   const deployer = getDeployerAccount();
   const treasuryAddress = getTreasuryAddress();
@@ -96,7 +96,7 @@ export async function getTokenStats(): Promise<TokenStats> {
 }
 
 export async function mintCgold(input: MintInput): Promise<MintLogEntry> {
-  const address = getContractAddress();
+  const address = await getContractAddress();
   if (!address) throw new Error("No hay contrato activo. Despliega uno o configura NEXT_PUBLIC_CGOLD_BNB_TESTNET");
 
   if (!isAddress(input.to)) throw new Error("Dirección destino inválida");
@@ -129,7 +129,7 @@ export async function mintCgold(input: MintInput): Promise<MintLogEntry> {
   const client = getPublicClient();
   await client.waitForTransactionReceipt({ hash });
 
-  return appendMintLog({
+  return await appendMintLog({
     to: input.to,
     amount: input.amount.replace(/,/g, ""),
     category: input.category,
@@ -175,7 +175,7 @@ export async function deployToken(input: DeployInput): Promise<DeployRecord> {
   const cfg = getBnbChainConfig();
   const network = getActiveNetwork();
 
-  return appendDeployment({
+  return await appendDeployment({
     network,
     chainId: cfg.chainId,
     address: receipt.contractAddress,
@@ -193,22 +193,22 @@ export async function deployToken(input: DeployInput): Promise<DeployRecord> {
 
 export { registerDeploymentFromTx, registerMintFromTx };
 
-export function getMintHistory(limit = 50): MintLogEntry[] {
+export async function getMintHistory(limit = 50): Promise<MintLogEntry[]> {
   return listMintLogs(limit);
 }
 
-export function getDeploymentHistory(): DeployRecord[] {
+export async function getDeploymentHistory(): Promise<DeployRecord[]> {
   return listDeployments(getActiveNetwork());
 }
 
-export function activateDeployment(id: string): DeployRecord | null {
-  if (getContractAddressSource() === "env") {
+export async function activateDeployment(id: string): Promise<DeployRecord | null> {
+  if ((await getContractAddressSource()) === "env") {
     throw new Error("Hay dirección en variables de entorno; la registry queda en segundo plano");
   }
   return setActiveDeployment(id, getActiveNetwork());
 }
 
-export function getActiveContractFromRegistry(): DeployRecord | null {
+export async function getActiveContractFromRegistry(): Promise<DeployRecord | null> {
   return getActiveDeployment(getActiveNetwork());
 }
 

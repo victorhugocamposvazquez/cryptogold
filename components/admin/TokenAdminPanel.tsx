@@ -5,7 +5,7 @@ import { css } from "@/lib/css";
 import { fmtN } from "@/lib/format";
 import { TOKEN_SYMBOL, TOKEN_SUPPLY_LABEL } from "@/lib/brand";
 import { isAddress, type Address } from "viem";
-import { ALLOCATION_TARGETS, MINT_CATEGORIES } from "@/lib/token/mint-log";
+import { ALLOCATION_TARGETS, MINT_CATEGORIES } from "@/lib/token/mint-categories";
 import { mintTokenWithWallet } from "@/lib/token/wallet-actions";
 import { useAdminWallet } from "@/hooks/useAdminWallet";
 import WalletConnectBar from "@/components/admin/WalletConnectBar";

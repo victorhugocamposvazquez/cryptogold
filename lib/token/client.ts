@@ -22,20 +22,23 @@ export function getViemChain() {
   return getActiveNetwork() === "mainnet" ? bsc : bscTestnet;
 }
 
-function resolveAddress(): { address: Address | null; source: "env" | "registry" | null } {
+export async function resolveContractAddress(): Promise<{
+  address: Address | null;
+  source: "env" | "registry" | null;
+}> {
   const fromEnv = getContractAddressFromEnv();
   if (fromEnv) return { address: fromEnv as Address, source: "env" };
-  const active = getActiveDeployment(getActiveNetwork());
+  const active = await getActiveDeployment(getActiveNetwork());
   if (active?.address) return { address: active.address as Address, source: "registry" };
   return { address: null, source: null };
 }
 
-export function getContractAddress(): Address | null {
-  return resolveAddress().address;
+export async function getContractAddress(): Promise<Address | null> {
+  return (await resolveContractAddress()).address;
 }
 
-export function getContractAddressSource(): "env" | "registry" | null {
-  return resolveAddress().source;
+export async function getContractAddressSource(): Promise<"env" | "registry" | null> {
+  return (await resolveContractAddress()).source;
 }
 
 export function getPublicClient() {
@@ -80,7 +83,7 @@ export function getTreasuryAddress(): Address | null {
 }
 
 export async function readContractStats() {
-  const { address } = resolveAddress();
+  const { address } = await resolveContractAddress();
   if (!address) return null;
 
   const client = getPublicClient();

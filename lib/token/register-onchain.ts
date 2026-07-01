@@ -74,7 +74,7 @@ export async function registerDeploymentFromTx(input: {
 
   const cfg = getBnbChainConfig();
 
-  return appendDeployment({
+  return await appendDeployment({
     network: getActiveNetwork(),
     chainId: cfg.chainId,
     address,
@@ -133,7 +133,7 @@ export async function registerMintFromTx(
   const expectedWei = parseTokenAmount(input.amount);
   if (mintAmount !== expectedWei) throw new Error("Cantidad del mint no coincide");
 
-  return appendMintLog({
+  return await appendMintLog({
     to: input.to,
     amount: input.amount.replace(/,/g, ""),
     category: input.category,

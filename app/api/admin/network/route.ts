@@ -15,9 +15,9 @@ export async function GET(req: Request) {
   }
 
   const active = getActiveNetwork();
-  const profiles: Record<BnbNetwork, ReturnType<typeof resolveNetworkConfigView>> = {
-    testnet: resolveNetworkConfigView("testnet"),
-    mainnet: resolveNetworkConfigView("mainnet"),
+  const profiles: Record<BnbNetwork, Awaited<ReturnType<typeof resolveNetworkConfigView>>> = {
+    testnet: await resolveNetworkConfigView("testnet"),
+    mainnet: await resolveNetworkConfigView("mainnet"),
   };
 
   return NextResponse.json({

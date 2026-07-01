@@ -12,7 +12,7 @@ export async function GET(req: Request) {
   if (!verifyAdminRequest(req)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  return NextResponse.json({ mints: getMintHistory(100) });
+  return NextResponse.json({ mints: await getMintHistory(100) });
 }
 
 export async function POST(req: Request) {
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     };
 
     if (body.txHash && body.signer) {
-      const contractAddress = getContractAddress();
+      const contractAddress = await getContractAddress();
       if (!contractAddress) {
         return NextResponse.json({ error: "No hay contrato activo" }, { status: 400 });
       }

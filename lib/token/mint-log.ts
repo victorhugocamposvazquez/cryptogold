@@ -1,35 +1,100 @@
 import { randomUUID } from "crypto";
-import type { MintCategory, MintLogEntry } from "./types";
+import { isSupabaseAdminConfigured } from "@/lib/env";
+import { getActiveNetwork, getContractAddressFromEnv } from "@/lib/network-profiles";
+import { getActiveDeployment } from "./deployments";
+import type { MintLogEntry } from "./types";
 
 const MAX = 200;
 const logs: MintLogEntry[] = [];
 
-export function appendMintLog(entry: Omit<MintLogEntry, "id" | "createdAt">): MintLogEntry {
+type MintRow = {
+  id: string;
+  network: string;
+  contract_address: string;
+  to_address: string;
+  amount: string;
+  category: string;
+  note: string | null;
+  tx_hash: string;
+  created_at: string;
+};
+
+function rowToEntry(row: MintRow): MintLogEntry {
+  return {
+    id: row.id,
+    to: row.to_address,
+    amount: row.amount,
+    category: row.category as MintLogEntry["category"],
+    note: row.note ?? undefined,
+    txHash: row.tx_hash,
+    createdAt: row.created_at,
+  };
+}
+
+async function adminDb() {
+  const { createAdminClient } = await import("@/lib/supabase/server");
+  return createAdminClient();
+}
+
+async function resolveContractForLog(): Promise<string | null> {
+  const fromEnv = getContractAddressFromEnv();
+  if (fromEnv) return fromEnv;
+  const active = await getActiveDeployment(getActiveNetwork());
+  return active?.address ?? null;
+}
+
+export async function appendMintLog(entry: Omit<MintLogEntry, "id" | "createdAt">): Promise<MintLogEntry> {
   const row: MintLogEntry = {
     id: `MNT-${randomUUID().slice(0, 8).toUpperCase()}`,
     createdAt: new Date().toISOString(),
     ...entry,
   };
+
+  if (isSupabaseAdminConfigured()) {
+    try {
+      const contract = await resolveContractForLog();
+      if (!contract) throw new Error("no contract");
+      const supabase = await adminDb();
+      const { error } = await supabase.from("token_mints").insert({
+        id: row.id,
+        network: getActiveNetwork(),
+        contract_address: contract.toLowerCase(),
+        to_address: row.to.toLowerCase(),
+        amount: row.amount,
+        category: row.category,
+        note: row.note ?? null,
+        tx_hash: row.txHash,
+        created_at: row.createdAt,
+      });
+      if (error) throw new Error(error.message);
+      return row;
+    } catch {
+      /* fallback memory */
+    }
+  }
+
   logs.unshift(row);
   if (logs.length > MAX) logs.length = MAX;
   return row;
 }
 
-export function listMintLogs(limit = 50): MintLogEntry[] {
+export async function listMintLogs(limit = 50): Promise<MintLogEntry[]> {
+  if (isSupabaseAdminConfigured()) {
+    try {
+      const supabase = await adminDb();
+      const { data, error } = await supabase
+        .from("token_mints")
+        .select("*")
+        .eq("network", getActiveNetwork())
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (error) throw new Error(error.message);
+      return (data as MintRow[]).map(rowToEntry);
+    } catch {
+      /* fallback memory */
+    }
+  }
   return logs.slice(0, limit);
 }
 
-export const MINT_CATEGORIES: { value: MintCategory; label: string; hint: string }[] = [
-  { value: "marketing", label: "Marketing", hint: "Campañas, KOLs, promos pre-LP" },
-  { value: "liquidity", label: "Liquidez", hint: "Reserva antes de crear pool USDT/CGOLD" },
-  { value: "presale", label: "Preventa", hint: "Asignación a compradores early" },
-  { value: "team", label: "Equipo / stake", hint: "Stake estratégico emisor (20%)" },
-  { value: "treasury", label: "Tesorería", hint: "Multisig / reservas operativas" },
-  { value: "other", label: "Otro", hint: "Uso documentado en nota" },
-];
-
-export const ALLOCATION_TARGETS = [
-  { label: "Adquirentes / preventa", pct: 70, tokens: "8.400M" },
-  { label: "Stake estratégico emisor", pct: 20, tokens: "2.400M" },
-  { label: "Liquidez y reservas", pct: 10, tokens: "1.200M" },
-];
+export { MINT_CATEGORIES, ALLOCATION_TARGETS } from "./mint-categories";

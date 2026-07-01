@@ -1,4 +1,3 @@
-import { getActiveDeployment } from "@/lib/token/deployments";
 import {
   buildEnvTemplate,
   getActiveNetwork,
@@ -6,13 +5,14 @@ import {
   type BnbNetwork,
   type NetworkConfigView,
 } from "./network-profiles";
+import { getActiveDeployment } from "@/lib/token/deployments";
 
 /** Vista admin con contrato del registro cuando no hay env (solo servidor). */
-export function resolveNetworkConfigView(network: BnbNetwork): NetworkConfigView {
+export async function resolveNetworkConfigView(network: BnbNetwork): Promise<NetworkConfigView> {
   const base = resolveBase(network);
   if (!base.active || base.contractAddress) return base;
 
-  const reg = getActiveDeployment(network);
+  const reg = await getActiveDeployment(network);
   if (!reg?.address) return base;
 
   return {
