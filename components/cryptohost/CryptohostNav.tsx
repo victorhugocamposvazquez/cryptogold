@@ -27,6 +27,10 @@ export const CRYPTOHOST_SECTIONS: NavSection[] = [
     ],
   },
   {
+    title: "Token",
+    items: [{ href: "/admin/token", label: "Gestión CGOLD", admin: true }],
+  },
+  {
     title: "Operaciones",
     items: [
       { href: "/admin", label: "Panel de control", admin: true },
@@ -47,6 +51,7 @@ export const CRYPTOHOST_SECTIONS: NavSection[] = [
 function isActive(pathname: string, href: string) {
   if (href === "/admin") return pathname === "/admin";
   if (href === "/admin/transfers") return pathname === "/admin/transfers";
+  if (href === "/admin/token") return pathname === "/admin/token" || pathname.startsWith("/admin/token/");
   if (href === "/cryptohost") return pathname === "/cryptohost";
   return pathname === href || pathname.startsWith(href + "/");
 }

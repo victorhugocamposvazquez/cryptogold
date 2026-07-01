@@ -1,4 +1,14 @@
 import { TOKEN_SYMBOL, TOKEN_SUPPLY, CHAINS } from "./brand";
+import {
+  BNB_NETWORK,
+  getBnbChainConfig,
+  getCgoldBnbAddress,
+  bnbExplorerAddress,
+  type BnbNetwork,
+} from "./bnb";
+
+export type { BnbNetwork };
+export { BNB_NETWORK, getBnbChainConfig, getCgoldBnbAddress, bnbExplorerAddress, bnbExplorerToken } from "./bnb";
 
 export type ChainKey = "bnb" | "eth" | "polygon" | "solana" | "stellar" | "xrp";
 
@@ -7,18 +17,28 @@ export type ContractEntry = {
   chainId?: number;
   address: string;
   explorer?: string;
-  status: "live" | "pending" | "planned";
+  status: "live" | "testnet" | "pending" | "planned";
+  network?: BnbNetwork;
 };
+
+function bnbEntry(): ContractEntry {
+  const cfg = getBnbChainConfig();
+  const address = getCgoldBnbAddress();
+  const isTestnet = BNB_NETWORK === "testnet";
+
+  return {
+    chain: isTestnet ? "BNB Smart Chain Testnet" : "BNB Chain",
+    chainId: cfg.chainId,
+    address: address ?? "0x0000000000000000000000000000000000000000",
+    explorer: address ? bnbExplorerAddress(address) : `${cfg.explorer}/address/`,
+    status: address ? (isTestnet ? "testnet" : "live") : "pending",
+    network: BNB_NETWORK,
+  };
+}
 
 /** Public contract registry — update addresses after deploy. */
 export const CGOLD_CONTRACTS: ContractEntry[] = [
-  {
-    chain: "BNB Chain",
-    chainId: 56,
-    address: process.env.NEXT_PUBLIC_CGOLD_BNB || "0x0000000000000000000000000000000000000000",
-    explorer: "https://bscscan.com/address/",
-    status: process.env.NEXT_PUBLIC_CGOLD_BNB ? "live" : "pending",
-  },
+  bnbEntry(),
   {
     chain: "Ethereum",
     chainId: 1,
@@ -55,7 +75,8 @@ export const CONTRACT_SPEC = {
   symbol: TOKEN_SYMBOL,
   decimals: 18,
   totalSupply: TOKEN_SUPPLY,
-  mintable: false,
+  mintable: true,
+  mintCap: TOKEN_SUPPLY,
   burnable: false,
   standard: "ERC-20 / BEP-20",
 } as const;

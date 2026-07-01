@@ -33,3 +33,10 @@ next-env.d.ts
 
 # cryptohost generated archive (regenerable from /admin)
 data/cryptohost-history.json
+
+# foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/lib/
+contracts/.env

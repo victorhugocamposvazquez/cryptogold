@@ -42,7 +42,7 @@ Desde el panel puedes ver transferencias, regenerar el histórico de 5.000 opera
 
 1. **Supabase** — crea proyecto, ejecuta `supabase/schema.sql`, copia URL y keys a `.env.local`
 2. **Vercel** — deploy con env vars; `vercel.json` ejecuta cron de precios cada minuto
-3. **Contrato** — deploy `contracts/CryptoGold.sol` en BNB Chain (ver `contracts/README.md`)
+3. **Contrato** — deploy en **BNB Testnet** primero (`contracts/README.md`), luego mainnet tras auditoría
 4. **Pagos fiat** — configura webhook Transak/MoonPay → `POST /api/webhooks/payment` con header `x-webhook-secret`
 
 ### Variables de entorno
@@ -55,6 +55,23 @@ Ver `.env.example`.
 | `NEXT_PUBLIC_SUPABASE_*` | No | Persistir trades y usuarios en BD |
 | `SUPABASE_SERVICE_ROLE_KEY` | No | Webhooks y cron con Supabase |
 | `PAYMENT_WEBHOOK_SECRET` | No | Webhook Transak/MoonPay |
+| `NEXT_PUBLIC_BNB_NETWORK` | No | `testnet` (default) o `mainnet` |
+| `NEXT_PUBLIC_CGOLD_BNB_TESTNET` | No | Dirección CGOLD en BNB testnet |
+| `TOKEN_OWNER_PRIVATE_KEY` | No | Owner del contrato — mint en `/admin/token` |
+| `CGOLD_TREASURY_ADDRESS` | No | Wallet treasury (balance en backoffice) |
+| `NEXT_PUBLIC_CGOLD_BNB` | No | Dirección CGOLD en BNB mainnet |
+
+### Deploy del token (BNB Testnet)
+
+```bash
+cd contracts && cp .env.example .env   # DEPLOYER_PRIVATE_KEY + tBNB del faucet
+npm run contracts:install
+npm run contracts:test
+npm run contracts:deploy:testnet
+# Copia la dirección a .env.local → NEXT_PUBLIC_CGOLD_BNB_TESTNET
+```
+
+Ver guía completa en [`contracts/README.md`](contracts/README.md).
 
 ## Token
 
