@@ -5,7 +5,8 @@ export function isSupabaseConfigured(): boolean {
 }
 
 export function isSupabaseAdminConfigured(): boolean {
-  return isSupabaseConfigured() && !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  return isSupabaseConfigured() && !!key;
 }
 
 export function isPaymentWebhookConfigured(): boolean {

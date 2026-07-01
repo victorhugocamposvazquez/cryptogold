@@ -167,18 +167,33 @@ export default function TokenAdminPanel() {
   const [note, setNote] = useState("");
   const [pinAddress, setPinAddress] = useState("0x532386e7fa0300fc1344bce88694626965d8482a");
   const [pinning, setPinning] = useState(false);
+  const [registryHealth, setRegistryHealth] = useState<{
+    storageBackend?: string;
+    supabaseHost?: string | null;
+    deploymentsTableOk?: boolean;
+    activeAddress?: string | null;
+    error?: string | null;
+    hint?: string | null;
+  } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const [statsRes, mintsRes] = await Promise.all([
+      const [statsRes, mintsRes, healthRes] = await Promise.all([
         fetch("/api/token/stats"),
         fetch("/api/token/mint", { credentials: "include" }),
+        fetch("/api/admin/registry-health", { credentials: "include" }),
       ]);
       const statsData = await statsRes.json();
       if (!statsRes.ok) throw new Error(statsData.error || "Error cargando stats");
       setStats(statsData.stats);
+
+      if (healthRes.ok) {
+        setRegistryHealth(await healthRes.json());
+      } else {
+        setRegistryHealth(null);
+      }
 
       if (mintsRes.ok) {
         const mintsData = await mintsRes.json();
@@ -397,6 +412,30 @@ export default function TokenAdminPanel() {
 
       {tab === "manage" && (
         <>
+      {registryHealth && (registryHealth.error || registryHealth.hint) && (
+        <div
+          style={css(
+            `background:${registryHealth.error ? "rgba(224,82,82,0.12)" : "rgba(201,162,39,0.1)"};border:1px solid ${registryHealth.error ? "rgba(224,82,82,0.35)" : "rgba(201,162,39,0.35)"};border-radius:12px;padding:14px 16px;margin-bottom:20px;font:400 13px/1.55 var(--font-hanken);color:${registryHealth.error ? "#ffb4b4" : "#E8D48B"}`
+          )}
+        >
+          <div style={css("font:600 14px;margin-bottom:6px")}>Diagnóstico Supabase</div>
+          {registryHealth.supabaseHost && (
+            <div style={css("margin-bottom:4px")}>
+              Proyecto: <code style={css("font-family:var(--font-mono)")}>{registryHealth.supabaseHost}</code> · backend:{" "}
+              {registryHealth.storageBackend}
+            </div>
+          )}
+          {registryHealth.error && <div style={css("margin-bottom:4px")}>Error: {registryHealth.error}</div>}
+          {registryHealth.hint && <div>{registryHealth.hint}</div>}
+          {registryHealth.deploymentsTableOk && registryHealth.activeAddress && (
+            <div style={css("margin-top:8px;color:#9dffd0")}>
+              Contrato activo en DB:{" "}
+              <code style={css("font-family:var(--font-mono)")}>{registryHealth.activeAddress}</code>
+            </div>
+          )}
+        </div>
+      )}
+
       <WalletConnectBar ownerAddress={stats?.owner} />
 
       {stats?.registry?.storageBackend === "ephemeral" && (
