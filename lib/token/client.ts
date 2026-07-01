@@ -1,7 +1,8 @@
 import { createPublicClient, createWalletClient, http, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { bsc, bscTestnet } from "viem/chains";
-import { BNB_NETWORK, getBnbChainConfig, getCgoldBnbAddress } from "@/lib/bnb";
+import { BNB_NETWORK, getBnbChainConfig, getCgoldBnbAddress, getCgoldBnbAddressWithRegistry } from "@/lib/bnb";
+import { getActiveDeployment } from "./deployments";
 import { CGOLD_ABI } from "./abi";
 
 function rpcUrl(): string {
@@ -15,10 +16,20 @@ export function getViemChain() {
   return BNB_NETWORK === "mainnet" ? bsc : bscTestnet;
 }
 
+function resolveAddress(): { address: Address | null; source: "env" | "registry" | null } {
+  const fromEnv = getCgoldBnbAddress();
+  if (fromEnv) return { address: fromEnv as Address, source: "env" };
+  const active = getActiveDeployment(BNB_NETWORK);
+  if (active?.address) return { address: active.address as Address, source: "registry" };
+  return { address: null, source: null };
+}
+
 export function getContractAddress(): Address | null {
-  const addr = getCgoldBnbAddress();
-  if (!addr) return null;
-  return addr as Address;
+  return resolveAddress().address;
+}
+
+export function getContractAddressSource(): "env" | "registry" | null {
+  return resolveAddress().source;
 }
 
 export function getPublicClient() {
@@ -28,25 +39,42 @@ export function getPublicClient() {
   });
 }
 
-export function getOperatorAccount() {
-  const raw = process.env.TOKEN_OWNER_PRIVATE_KEY;
+function pkAccount(raw: string | undefined) {
   if (!raw) return null;
   const pk = (raw.startsWith("0x") ? raw : `0x${raw}`) as Hex;
   return privateKeyToAccount(pk);
 }
 
+export function getOperatorAccount() {
+  return pkAccount(process.env.TOKEN_OWNER_PRIVATE_KEY);
+}
+
+export function getDeployerAccount() {
+  return (
+    pkAccount(process.env.TOKEN_DEPLOYER_PRIVATE_KEY) ??
+    pkAccount(process.env.TOKEN_OWNER_PRIVATE_KEY) ??
+    pkAccount(process.env.DEPLOYER_PRIVATE_KEY)
+  );
+}
+
 export function getWalletClient() {
   const account = getOperatorAccount();
   if (!account) return null;
-  return createWalletClient({
-    account,
-    chain: getViemChain(),
-    transport: http(rpcUrl()),
-  });
+  return createWalletClient({ account, chain: getViemChain(), transport: http(rpcUrl()) });
+}
+
+export function getDeployerWalletClient() {
+  const account = getDeployerAccount();
+  if (!account) return null;
+  return createWalletClient({ account, chain: getViemChain(), transport: http(rpcUrl()) });
 }
 
 export function isTokenOperatorConfigured(): boolean {
   return !!getOperatorAccount();
+}
+
+export function isTokenDeployerConfigured(): boolean {
+  return !!getDeployerAccount();
 }
 
 export function getTreasuryAddress(): Address | null {
@@ -56,23 +84,35 @@ export function getTreasuryAddress(): Address | null {
 }
 
 export async function readContractStats() {
-  const address = getContractAddress();
+  const { address } = resolveAddress();
   if (!address) return null;
 
   const client = getPublicClient();
   const treasury = getTreasuryAddress();
 
-  const [maxSupply, totalSupply, remainingMintable, owner, treasuryBal] = await Promise.all([
-    client.readContract({ address, abi: CGOLD_ABI, functionName: "MAX_SUPPLY" }),
-    client.readContract({ address, abi: CGOLD_ABI, functionName: "totalSupply" }),
-    client.readContract({ address, abi: CGOLD_ABI, functionName: "remainingMintable" }),
-    client.readContract({ address, abi: CGOLD_ABI, functionName: "owner" }),
-    treasury
-      ? client.readContract({ address, abi: CGOLD_ABI, functionName: "balanceOf", args: [treasury] })
-      : Promise.resolve(null),
-  ]);
+  const [maxSupply, totalSupply, remainingMintable, owner, tokenName, tokenSymbol, treasuryBal] =
+    await Promise.all([
+      client.readContract({ address, abi: CGOLD_ABI, functionName: "maxSupply" }),
+      client.readContract({ address, abi: CGOLD_ABI, functionName: "totalSupply" }),
+      client.readContract({ address, abi: CGOLD_ABI, functionName: "remainingMintable" }),
+      client.readContract({ address, abi: CGOLD_ABI, functionName: "owner" }),
+      client.readContract({ address, abi: CGOLD_ABI, functionName: "name" }),
+      client.readContract({ address, abi: CGOLD_ABI, functionName: "symbol" }),
+      treasury
+        ? client.readContract({ address, abi: CGOLD_ABI, functionName: "balanceOf", args: [treasury] })
+        : Promise.resolve(null),
+    ]);
 
-  return { address, maxSupply, totalSupply, remainingMintable, owner, treasuryBal };
+  return {
+    address,
+    maxSupply,
+    totalSupply,
+    remainingMintable,
+    owner,
+    tokenName,
+    tokenSymbol,
+    treasuryBal,
+  };
 }
 
-export { getBnbChainConfig };
+export { getBnbChainConfig, getCgoldBnbAddressWithRegistry };

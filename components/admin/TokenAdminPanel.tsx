@@ -6,8 +6,10 @@ import { fmtN } from "@/lib/format";
 import { TOKEN_SYMBOL, TOKEN_SUPPLY_LABEL } from "@/lib/brand";
 import { ALLOCATION_TARGETS, MINT_CATEGORIES } from "@/lib/token/mint-log";
 import type { MintCategory, MintLogEntry, TokenStats } from "@/lib/token/types";
+import TokenDeployPanel from "./TokenDeployPanel";
 
 const QUICK_AMOUNTS = ["100000", "500000", "1000000", "5000000", "10000000"];
+type Tab = "manage" | "deploy";
 
 /** Compact token amounts: 12B → 12,000M */
 function fmtSupply(n: number): string {
@@ -23,28 +25,30 @@ function fmtSupply(n: number): string {
 function SupplyOverview({ stats }: { stats: TokenStats }) {
   const minted = Number(stats.totalMinted);
   const remaining = Number(stats.remainingMintable);
+  const cap = Number(stats.maxSupply);
   const pct = stats.mintPercentUsed;
+  const sym = stats.tokenSymbol;
 
   const metrics = [
     {
       label: "Minteado",
       value: fmtSupply(minted),
-      unit: TOKEN_SYMBOL,
+      unit: sym,
       hint: `${pct.toFixed(2)}% del cap`,
       accent: "#E8D48B",
     },
     {
       label: "Disponible",
       value: fmtSupply(remaining),
-      unit: TOKEN_SYMBOL,
+      unit: sym,
       hint: "Listo para mint",
       accent: "#26A17B",
     },
     {
       label: "Cap máximo",
-      value: TOKEN_SUPPLY_LABEL,
-      unit: TOKEN_SYMBOL,
-      hint: "Hard cap on-chain",
+      value: fmtSupply(cap),
+      unit: sym,
+      hint: stats.tokenName,
       accent: "#C9A227",
     },
   ];
@@ -65,10 +69,12 @@ function SupplyOverview({ stats }: { stats: TokenStats }) {
       <div style={css("display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap")}>
         <div>
           <div style={css("font:600 11px var(--font-mono);color:#C9A227;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px")}>
-            Suministro {TOKEN_SYMBOL}
+            Suministro {stats.tokenSymbol}
           </div>
           <div style={css("font:500 13px var(--font-hanken);color:#9A9AA0")}>
-            Emisión controlada · {stats.network === "testnet" ? "BNB Testnet" : "BNB Mainnet"}
+            {stats.tokenName} · {stats.network === "testnet" ? "BNB Testnet" : "BNB Mainnet"}
+            {stats.addressSource === "registry" && " · activo desde backoffice"}
+            {stats.addressSource === "env" && " · env"}
           </div>
         </div>
         <div style={css("font:600 22px var(--font-mono);color:#E8D48B;letter-spacing:-0.03em")}>
@@ -80,7 +86,7 @@ function SupplyOverview({ stats }: { stats: TokenStats }) {
         <div style={css("display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px")}>
           <span style={css("font:500 12px var(--font-hanken);color:#8A8A94")}>Progreso de emisión</span>
           <span style={css("font:500 11px var(--font-mono);color:#6B6B76")}>
-            {fmtSupply(minted)} / {TOKEN_SUPPLY_LABEL}
+            {fmtSupply(minted)} / {fmtSupply(cap)} {sym}
           </span>
         </div>
         <div style={css("height:8px;border-radius:999px;background:rgba(255,255,255,0.06);overflow:hidden")}>
@@ -129,7 +135,7 @@ function SupplyOverview({ stats }: { stats: TokenStats }) {
         >
           <span style={css("font:500 12px var(--font-hanken);color:#8A8A94")}>Tesorería</span>
           <span style={css("font:600 14px var(--font-mono);color:#C8C8CE")}>
-            {fmtSupply(Number(stats.treasuryBalance))} {TOKEN_SYMBOL}
+            {fmtSupply(Number(stats.treasuryBalance))} {stats.tokenSymbol}
             <span style={css("font:400 11px var(--font-mono);color:#6B6B76;margin-left:8px")}>
               {stats.treasuryAddress?.slice(0, 8)}…{stats.treasuryAddress?.slice(-4)}
             </span>
@@ -141,6 +147,7 @@ function SupplyOverview({ stats }: { stats: TokenStats }) {
 }
 
 export default function TokenAdminPanel() {
+  const [tab, setTab] = useState<Tab>("manage");
   const [stats, setStats] = useState<TokenStats | null>(null);
   const [mints, setMints] = useState<MintLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -213,10 +220,10 @@ export default function TokenAdminPanel() {
       <div style={css("display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px;flex-wrap:wrap")}>
         <div>
           <h1 data-ops-h1 style={css("font:700 32px var(--font-hanken);margin:0 0 8px;letter-spacing:-0.03em")}>
-            Gestión del token
+            Token on-chain
           </h1>
           <p style={css("font:400 15px var(--font-hanken);color:#9A9AA0;margin:0;max-width:640px")}>
-            Mint controlado de {TOKEN_SYMBOL} on-chain (cap {TOKEN_SUPPLY_LABEL}). Ideal para marketing, preventa o reserva de liquidez antes del pool.
+            Crea tokens BEP-20 con nombre y símbolo personalizados, despliega en BNB testnet y mintea desde el backoffice.
           </p>
         </div>
         <button
@@ -228,6 +235,34 @@ export default function TokenAdminPanel() {
           {loading ? "Actualizando…" : "Actualizar"}
         </button>
       </div>
+
+      <div style={css("display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap")}>
+        {(
+          [
+            ["manage", "Gestionar"],
+            ["deploy", "Desplegar contrato"],
+          ] as const
+        ).map(([id, label]) => {
+          const active = tab === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              style={css(
+                `appearance:none;cursor:pointer;border-radius:999px;padding:10px 18px;font:600 13px var(--font-hanken);border:1px solid ${active ? "#C9A227" : "rgba(255,255,255,0.12)"};background:${active ? "#C9A227" : "transparent"};color:${active ? "#0D0D0D" : "#C8C8CE"}`
+              )}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {tab === "deploy" && <TokenDeployPanel stats={stats} onDeployed={load} />}
+
+      {tab === "manage" && (
+        <>
 
       {error && (
         <div style={css("background:rgba(224,82,82,0.12);border:1px solid rgba(224,82,82,0.35);color:#ffb4b4;border-radius:12px;padding:14px 16px;margin-bottom:20px;font:500 14px var(--font-hanken)")}>
@@ -242,11 +277,10 @@ export default function TokenAdminPanel() {
 
       {!stats?.configured && (
         <div style={css("background:#161616;border:1px solid rgba(201,162,39,0.35);border-radius:14px;padding:20px 22px;margin-bottom:24px")}>
-          <div style={css("font:600 15px var(--font-hanken);color:#E8D48B;margin-bottom:8px")}>Contrato no desplegado</div>
+          <div style={css("font:600 15px var(--font-hanken);color:#E8D48B;margin-bottom:8px")}>Sin contrato activo</div>
           <p style={css("font:400 14px/1.55 var(--font-hanken);color:#9A9AA0;margin:0")}>
-            Despliega el contrato v2 con mint en BNB testnet y configura{" "}
-            <code style={css("font-family:var(--font-mono);color:#C9A227")}>NEXT_PUBLIC_CGOLD_BNB_TESTNET</code> y{" "}
-            <code style={css("font-family:var(--font-mono);color:#C9A227")}>TOKEN_OWNER_PRIVATE_KEY</code> en el servidor.
+            Ve a <button type="button" onClick={() => setTab("deploy")} style={css("appearance:none;cursor:pointer;background:none;border:none;padding:0;font:600 14px var(--font-hanken);color:#C9A227")}>Desplegar contrato</button> o configura{" "}
+            <code style={css("font-family:var(--font-mono);color:#C9A227")}>NEXT_PUBLIC_CGOLD_BNB_TESTNET</code>.
           </p>
         </div>
       )}
@@ -282,7 +316,7 @@ export default function TokenAdminPanel() {
             </label>
 
             <label>
-              <span style={css("display:block;font:500 12px var(--font-hanken);color:#9A9AA0;margin-bottom:6px")}>Cantidad ({TOKEN_SYMBOL})</span>
+              <span style={css("display:block;font:500 12px var(--font-hanken);color:#9A9AA0;margin-bottom:6px")}>Cantidad ({stats?.tokenSymbol ?? TOKEN_SYMBOL})</span>
               <input
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -338,7 +372,7 @@ export default function TokenAdminPanel() {
                 `appearance:none;cursor:${minting || !stats?.operatorIsOwner ? "not-allowed" : "pointer"};background:${stats?.operatorIsOwner ? "#C9A227" : "#3A3010"};color:#0D0D0D;border:none;border-radius:10px;padding:14px 20px;font:600 15px var(--font-hanken);opacity:${minting ? 0.7 : 1}`
               )}
             >
-              {minting ? "Firmando transacción…" : `Mint ${TOKEN_SYMBOL} on-chain`}
+              {minting ? "Firmando transacción…" : `Mint ${stats?.tokenSymbol ?? TOKEN_SYMBOL} on-chain`}
             </button>
           </form>
         </div>
@@ -401,7 +435,7 @@ export default function TokenAdminPanel() {
                     <td style={css("padding:12px 20px;font-family:var(--font-mono);color:#C9A227")}>{m.id}</td>
                     <td style={css("padding:12px 20px;color:#C8C8CE")}>{m.category}</td>
                     <td style={css("padding:12px 20px;font-family:var(--font-mono);font-size:12px;color:#9A9AA0")}>{m.to.slice(0, 8)}…{m.to.slice(-4)}</td>
-                    <td style={css("padding:12px 20px;color:#fff")}>{fmtN(Number(m.amount), 0)} {TOKEN_SYMBOL}</td>
+                    <td style={css("padding:12px 20px;color:#fff")}>{fmtN(Number(m.amount), 0)} {stats?.tokenSymbol ?? TOKEN_SYMBOL}</td>
                     <td style={css("padding:12px 20px")}>
                       <a href={`${explorerBase}/tx/${m.txHash}`} target="_blank" rel="noopener noreferrer" style={css("color:#C9A227;text-decoration:none;font-family:var(--font-mono);font-size:11px")}>
                         {m.txHash.slice(0, 10)}…
@@ -415,6 +449,8 @@ export default function TokenAdminPanel() {
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }

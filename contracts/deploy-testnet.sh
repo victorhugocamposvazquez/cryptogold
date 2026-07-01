@@ -19,7 +19,7 @@ fi
 
 RPC="${BSC_TESTNET_RPC_URL:-https://data-seed-prebsc-1-s1.binance.org:8545}"
 
-echo "→ Deploy CGOLD en BNB Smart Chain Testnet (chainId 97)"
+echo "→ Deploy token (CappedMintableToken) en BNB Smart Chain Testnet (chainId 97)"
 echo "→ RPC: $RPC"
 
 VERIFY_ARGS=()
@@ -30,7 +30,7 @@ else
   echo "→ Verificación BscScan: omitida (añade BSCSCAN_API_KEY para verificar)"
 fi
 
-forge script script/DeployCryptoGold.s.sol:DeployCryptoGold \
+forge script script/DeployCappedMintableToken.s.sol:DeployCappedMintableToken \
   --rpc-url "$RPC" \
   --broadcast \
   "${VERIFY_ARGS[@]}" \

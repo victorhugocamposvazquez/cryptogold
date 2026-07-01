@@ -2,15 +2,15 @@
 pragma solidity ^0.8.20;
 
 /**
- * @title CryptoGold (CGOLD)
- * @notice ERC-20 / BEP-20 with hard cap (12B). Owner can mint until MAX_SUPPLY. No burn.
- * @dev Owner = deployer or transferred multisig. Mint via backoffice before LP / allocations.
+ * @title CappedMintableToken
+ * @notice Generic hard-capped BEP-20 / ERC-20. Name and symbol set at deploy time.
+ *         Owner mints until maxSupply. No burn.
  */
-contract CryptoGold {
-    string public constant name = "CryptoGold";
-    string public constant symbol = "CGOLD";
+contract CappedMintableToken {
+    string public name;
+    string public symbol;
     uint8 public constant decimals = 18;
-    uint256 public constant MAX_SUPPLY = 12_000_000_000 * 10 ** 18;
+    uint256 public immutable maxSupply;
 
     address public owner;
     uint256 private _totalSupply;
@@ -28,14 +28,24 @@ contract CryptoGold {
         _;
     }
 
-    /**
-     * @param treasury Recipient of optional genesis mint (e.g. treasury multisig).
-     * @param initialMint Amount minted to treasury at deploy (0 = all supply mintable later).
-     */
-    constructor(address treasury, uint256 initialMint) {
+    constructor(
+        string memory name_,
+        string memory symbol_,
+        uint256 maxSupply_,
+        address treasury,
+        uint256 initialMint
+    ) {
+        require(bytes(name_).length > 0, "name required");
+        require(bytes(symbol_).length > 0, "symbol required");
+        require(maxSupply_ > 0, "maxSupply required");
         require(treasury != address(0), "treasury required");
-        require(initialMint <= MAX_SUPPLY, "initial exceeds cap");
+        require(initialMint <= maxSupply_, "initial exceeds cap");
+
+        name = name_;
+        symbol = symbol_;
+        maxSupply = maxSupply_;
         owner = msg.sender;
+
         if (initialMint > 0) {
             _mint(treasury, initialMint);
         }
@@ -46,7 +56,12 @@ contract CryptoGold {
     }
 
     function remainingMintable() external view returns (uint256) {
-        return MAX_SUPPLY - _totalSupply;
+        return maxSupply - _totalSupply;
+    }
+
+    /** @dev Alias for tooling that expects MAX_SUPPLY */
+    function MAX_SUPPLY() external view returns (uint256) {
+        return maxSupply;
     }
 
     function transferOwnership(address newOwner) external onlyOwner {
@@ -55,11 +70,10 @@ contract CryptoGold {
         owner = newOwner;
     }
 
-    /// @notice Mint CGOLD to `to` while total supply stays within MAX_SUPPLY.
     function mint(address to, uint256 amount) external onlyOwner {
         require(to != address(0), "zero address");
         require(amount > 0, "zero amount");
-        require(_totalSupply + amount <= MAX_SUPPLY, "cap exceeded");
+        require(_totalSupply + amount <= maxSupply, "cap exceeded");
         _mint(to, amount);
         emit Mint(to, amount, msg.sender);
     }

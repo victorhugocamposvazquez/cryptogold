@@ -26,14 +26,21 @@ export function getBnbChainConfig() {
   return BNB_CHAIN[BNB_NETWORK];
 }
 
-/** Resolved CGOLD contract on the active BNB network, or null if not deployed yet. */
+/** Resolved CGOLD contract: env var first, then active deployment from backoffice registry. */
 export function getCgoldBnbAddress(): string | null {
-  const addr =
+  const envAddr =
     BNB_NETWORK === "testnet"
       ? process.env.NEXT_PUBLIC_CGOLD_BNB_TESTNET
       : process.env.NEXT_PUBLIC_CGOLD_BNB;
-  if (!addr || addr === "0x0000000000000000000000000000000000000000") return null;
-  return addr;
+  if (envAddr && envAddr !== "0x0000000000000000000000000000000000000000") {
+    return envAddr;
+  }
+  return null;
+}
+
+/** Server-side: includes deployment registry when env is unset. */
+export function getCgoldBnbAddressWithRegistry(registryAddress: string | null): string | null {
+  return getCgoldBnbAddress() ?? registryAddress;
 }
 
 export function isCgoldDeployedOnBnb(): boolean {
@@ -46,4 +53,25 @@ export function bnbExplorerAddress(address: string): string {
 
 export function bnbExplorerToken(address: string): string {
   return `${getBnbChainConfig().explorer}/token/${address}`;
+}
+
+export function getBnbChainConfigForNetwork(network: BnbNetwork) {
+  return BNB_CHAIN[network];
+}
+
+export function bnbExplorerTx(txHash: string, network?: BnbNetwork): string {
+  const cfg = network ? BNB_CHAIN[network] : getBnbChainConfig();
+  return `${cfg.explorer}/tx/${txHash}`;
+}
+
+export function bnbExplorerAddressOnNetwork(address: string, network: BnbNetwork): string {
+  return `${BNB_CHAIN[network].explorer}/address/${address}`;
+}
+
+export function bnbExplorerTokenOnNetwork(address: string, network: BnbNetwork): string {
+  return `${BNB_CHAIN[network].explorer}/token/${address}`;
+}
+
+export function bnbNetworkLabel(network: BnbNetwork): string {
+  return BNB_CHAIN[network].shortName;
 }

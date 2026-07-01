@@ -198,6 +198,8 @@ button { font-family: inherit; }
   [data-cryptohost-cards] { display: block !important; }
   [data-cryptohost-table-wrap] { display: none !important; }
   [data-admin-table-wrap] table { min-width: 640px; }
+  [data-deploy-table] { display: none !important; }
+  [data-deploy-cards] { display: flex !important; }
   [data-admin-form] { grid-template-columns: 1fr !important; }
   [data-admin-form] label { grid-column: 1 / -1 !important; }
 
