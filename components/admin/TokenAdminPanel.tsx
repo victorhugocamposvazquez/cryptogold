@@ -164,6 +164,8 @@ export default function TokenAdminPanel() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<MintCategory>("marketing");
   const [note, setNote] = useState("");
+  const [pinAddress, setPinAddress] = useState("0x532386e7fa0300fc1344bce88694626965d8482a");
+  const [pinning, setPinning] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -191,6 +193,30 @@ export default function TokenAdminPanel() {
   useEffect(() => {
     load();
   }, [load]);
+
+  async function submitPin(e: React.FormEvent) {
+    e.preventDefault();
+    setPinning(true);
+    setError("");
+    setSuccess("");
+    try {
+      if (!isAddress(pinAddress.trim())) throw new Error("Dirección de contrato inválida");
+      const res = await fetch("/api/token/deploy", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "pin", address: pinAddress.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo fijar el contrato");
+      setSuccess(`Contrato activo · ${data.deployment.symbol} · ${data.deployment.address.slice(0, 10)}…`);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al fijar contrato");
+    } finally {
+      setPinning(false);
+    }
+  }
 
   async function submitMint(e: React.FormEvent) {
     e.preventDefault();
@@ -335,10 +361,38 @@ export default function TokenAdminPanel() {
       {!stats?.configured && (
         <div style={css("background:#161616;border:1px solid rgba(201,162,39,0.35);border-radius:14px;padding:20px 22px;margin-bottom:24px")}>
           <div style={css("font:600 15px var(--font-hanken);color:#E8D48B;margin-bottom:8px")}>Sin contrato activo</div>
-          <p style={css("font:400 14px/1.55 var(--font-hanken);color:#9A9AA0;margin:0")}>
-            Ve a <button type="button" onClick={() => setTab("deploy")} style={css("appearance:none;cursor:pointer;background:none;border:none;padding:0;font:600 14px var(--font-hanken);color:#C9A227")}>Desplegar contrato</button> o configura{" "}
-            <code style={css("font-family:var(--font-mono);color:#C9A227")}>NEXT_PUBLIC_CGOLD_BNB_TESTNET</code>.
+          {stats?.registry?.setupHint && (
+            <p style={css("font:400 14px/1.55 var(--font-hanken);color:#ffb4b4;margin:0 0 12px")}>{stats.registry.setupHint}</p>
+          )}
+          {stats?.registry?.registryError && (
+            <p style={css("font:400 13px/1.5 var(--font-hanken);color:#ffb4b4;margin:0 0 12px;font-family:var(--font-mono)")}>
+              {stats.registry.registryError}
+            </p>
+          )}
+          <p style={css("font:400 14px/1.55 var(--font-hanken);color:#9A9AA0;margin:0 0 16px")}>
+            Si ya desplegaste el token, fíjalo aquí (se guarda en Supabase). También puedes ir a{" "}
+            <button type="button" onClick={() => setTab("deploy")} style={css("appearance:none;cursor:pointer;background:none;border:none;padding:0;font:600 14px var(--font-hanken);color:#C9A227")}>
+              Desplegar contrato
+            </button>
+            .
           </p>
+          <form onSubmit={submitPin} style={css("display:flex;flex-direction:column;gap:10px")}>
+            <label>
+              <span style={css("display:block;font:500 12px var(--font-hanken);color:#9A9AA0;margin-bottom:6px")}>Contrato existente (BSC Testnet)</span>
+              <input
+                value={pinAddress}
+                onChange={(e) => setPinAddress(e.target.value)}
+                style={css("width:100%;box-sizing:border-box;background:#0D0D0D;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:12px 14px;font:400 13px var(--font-mono);color:#fff")}
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={pinning}
+              style={css(`appearance:none;cursor:${pinning ? "wait" : "pointer"};align-self:flex-start;background:#C9A227;color:#0D0D0D;border:none;border-radius:10px;padding:10px 16px;font:600 13px var(--font-hanken)`)}
+            >
+              {pinning ? "Fijando…" : "Fijar contrato existente"}
+            </button>
+          </form>
         </div>
       )}
 

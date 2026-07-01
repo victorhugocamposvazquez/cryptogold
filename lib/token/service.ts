@@ -22,6 +22,7 @@ import { appendDeployment, getActiveDeployment, listDeployments, setActiveDeploy
 import type { DeployInput, DeployRecord, MintCategory, MintInput, MintLogEntry, TokenStats } from "./types";
 import { validateDeployInput } from "./validate";
 import { registerDeploymentFromTx, registerMintFromTx } from "./register-onchain";
+import { getRegistryDiagnostics } from "./registry-diagnostics";
 
 const DECIMALS = 18;
 
@@ -32,6 +33,7 @@ function fmtTokens(wei: bigint): string {
 export async function getTokenStats(): Promise<TokenStats> {
   const cfg = getBnbChainConfig();
   const network = getActiveNetwork();
+  const registry = await getRegistryDiagnostics();
   const contractAddress = await getContractAddress();
   const addressSource = await getContractAddressSource();
   const operator = getOperatorAccount();
@@ -60,6 +62,7 @@ export async function getTokenStats(): Promise<TokenStats> {
       maxSupply: String(TOKEN_SUPPLY),
       remainingMintable: String(TOKEN_SUPPLY),
       mintPercentUsed: 0,
+      registry,
     };
   }
 
@@ -92,6 +95,7 @@ export async function getTokenStats(): Promise<TokenStats> {
     maxSupply,
     remainingMintable: remaining,
     mintPercentUsed: +usedPct.toFixed(4),
+    registry,
   };
 }
 
@@ -210,6 +214,43 @@ export async function activateDeployment(id: string): Promise<DeployRecord | nul
 
 export async function getActiveContractFromRegistry(): Promise<DeployRecord | null> {
   return getActiveDeployment(getActiveNetwork());
+}
+
+/** Registra un contrato ya desplegado on-chain como activo (sin redeploy). */
+export async function pinActiveContract(address: string, txHash?: string): Promise<DeployRecord> {
+  if (!isAddress(address)) throw new Error("Dirección de contrato inválida");
+
+  const client = getPublicClient();
+  const addr = address.trim() as Address;
+  const [name, symbol, maxSupply, owner, totalSupply] = await Promise.all([
+    client.readContract({ address: addr, abi: CGOLD_ABI, functionName: "name" }),
+    client.readContract({ address: addr, abi: CGOLD_ABI, functionName: "symbol" }),
+    client.readContract({ address: addr, abi: CGOLD_ABI, functionName: "maxSupply" }),
+    client.readContract({ address: addr, abi: CGOLD_ABI, functionName: "owner" }),
+    client.readContract({ address: addr, abi: CGOLD_ABI, functionName: "totalSupply" }),
+  ]);
+
+  const cfg = getBnbChainConfig();
+  const network = getActiveNetwork();
+  const hash =
+    txHash && /^0x[a-fA-F0-9]{64}$/.test(txHash)
+      ? txHash
+      : (`0x${"0".repeat(64)}` as `0x${string}`);
+
+  return appendDeployment({
+    network,
+    chainId: cfg.chainId,
+    address: addr,
+    name: String(name),
+    symbol: String(symbol),
+    maxSupply: fmtTokens(maxSupply as bigint),
+    initialMint: fmtTokens(totalSupply as bigint),
+    treasury: String(owner),
+    deployer: String(owner),
+    txHash: hash,
+    contractTemplate: TOKEN_CONTRACT_TEMPLATE,
+    explorer: cfg.explorer,
+  });
 }
 
 export function explorerLinks(address: string) {

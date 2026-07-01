@@ -101,6 +101,10 @@ async function listFromSupabase(network?: BnbNetwork): Promise<DeployRecord[]> {
   return (data as DeployRow[]).map(rowToRecord);
 }
 
+function useSupabaseStorage(): boolean {
+  return isSupabaseAdminConfigured();
+}
+
 async function appendToSupabase(entry: Omit<DeployRecord, "id" | "createdAt" | "active">): Promise<DeployRecord> {
   const supabase = await adminDb();
   const { error: offErr } = await supabase
@@ -147,12 +151,8 @@ async function setActiveInSupabase(id: string, network: BnbNetwork): Promise<Dep
 }
 
 export async function listDeployments(network?: BnbNetwork): Promise<DeployRecord[]> {
-  if (isSupabaseAdminConfigured()) {
-    try {
-      return await listFromSupabase(network);
-    } catch {
-      /* fallback file */
-    }
+  if (useSupabaseStorage()) {
+    return listFromSupabase(network);
   }
   const all = loadFile().deployments;
   if (!network) return all;
@@ -167,12 +167,8 @@ export async function getActiveDeployment(network: BnbNetwork): Promise<DeployRe
 export async function appendDeployment(
   entry: Omit<DeployRecord, "id" | "createdAt" | "active">
 ): Promise<DeployRecord> {
-  if (isSupabaseAdminConfigured()) {
-    try {
-      return await appendToSupabase(entry);
-    } catch {
-      /* fallback file */
-    }
+  if (useSupabaseStorage()) {
+    return appendToSupabase(entry);
   }
 
   const store = loadFile();
@@ -192,12 +188,8 @@ export async function appendDeployment(
 }
 
 export async function setActiveDeployment(id: string, network: BnbNetwork): Promise<DeployRecord | null> {
-  if (isSupabaseAdminConfigured()) {
-    try {
-      return await setActiveInSupabase(id, network);
-    } catch {
-      /* fallback file */
-    }
+  if (useSupabaseStorage()) {
+    return setActiveInSupabase(id, network);
   }
 
   const store = loadFile();

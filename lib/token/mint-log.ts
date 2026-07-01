@@ -51,26 +51,22 @@ export async function appendMintLog(entry: Omit<MintLogEntry, "id" | "createdAt"
   };
 
   if (isSupabaseAdminConfigured()) {
-    try {
-      const contract = await resolveContractForLog();
-      if (!contract) throw new Error("no contract");
-      const supabase = await adminDb();
-      const { error } = await supabase.from("token_mints").insert({
-        id: row.id,
-        network: getActiveNetwork(),
-        contract_address: contract.toLowerCase(),
-        to_address: row.to.toLowerCase(),
-        amount: row.amount,
-        category: row.category,
-        note: row.note ?? null,
-        tx_hash: row.txHash,
-        created_at: row.createdAt,
-      });
-      if (error) throw new Error(error.message);
-      return row;
-    } catch {
-      /* fallback memory */
-    }
+    const contract = await resolveContractForLog();
+    if (!contract) throw new Error("No hay contrato activo para registrar el mint");
+    const supabase = await adminDb();
+    const { error } = await supabase.from("token_mints").insert({
+      id: row.id,
+      network: getActiveNetwork(),
+      contract_address: contract.toLowerCase(),
+      to_address: row.to.toLowerCase(),
+      amount: row.amount,
+      category: row.category,
+      note: row.note ?? null,
+      tx_hash: row.txHash,
+      created_at: row.createdAt,
+    });
+    if (error) throw new Error(error.message);
+    return row;
   }
 
   logs.unshift(row);
@@ -80,19 +76,15 @@ export async function appendMintLog(entry: Omit<MintLogEntry, "id" | "createdAt"
 
 export async function listMintLogs(limit = 50): Promise<MintLogEntry[]> {
   if (isSupabaseAdminConfigured()) {
-    try {
-      const supabase = await adminDb();
-      const { data, error } = await supabase
-        .from("token_mints")
-        .select("*")
-        .eq("network", getActiveNetwork())
-        .order("created_at", { ascending: false })
-        .limit(limit);
-      if (error) throw new Error(error.message);
-      return (data as MintRow[]).map(rowToEntry);
-    } catch {
-      /* fallback memory */
-    }
+    const supabase = await adminDb();
+    const { data, error } = await supabase
+      .from("token_mints")
+      .select("*")
+      .eq("network", getActiveNetwork())
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) throw new Error(error.message);
+    return (data as MintRow[]).map(rowToEntry);
   }
   return logs.slice(0, limit);
 }

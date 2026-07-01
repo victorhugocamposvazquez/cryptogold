@@ -38,6 +38,16 @@ export type TokenStats = {
   maxSupply: string;
   remainingMintable: string;
   mintPercentUsed: number;
+  registry?: {
+    supabaseConfigured: boolean;
+    supabaseAdminConfigured: boolean;
+    storageBackend: "supabase" | "file";
+    envContractPinned: boolean;
+    deploymentCount: number;
+    activeDeploymentId: string | null;
+    registryError: string | null;
+    setupHint: string | null;
+  };
 };
 
 export type DeployRecord = {
