@@ -11,7 +11,8 @@
     "contracts:install": "cd contracts && forge install foundry-rs/forge-std",
     "contracts:build": "cd contracts && forge build",
     "contracts:test": "cd contracts && forge test -vv",
-    "contracts:deploy:testnet": "cd contracts && ./deploy-testnet.sh"
+    "contracts:deploy:testnet": "cd contracts && ./deploy-testnet.sh",
+    "setup:git": "./scripts/setup-git-hooks.sh"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

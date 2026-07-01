@@ -9,12 +9,133 @@ import type { MintCategory, MintLogEntry, TokenStats } from "@/lib/token/types";
 
 const QUICK_AMOUNTS = ["100000", "500000", "1000000", "5000000", "10000000"];
 
-function StatBox({ label, value, sub }: { label: string; value: string; sub?: string }) {
+/** Compact token amounts: 12B → 12,000M */
+function fmtSupply(n: number): string {
+  if (!Number.isFinite(n) || n === 0) return "0";
+  if (n >= 1_000_000) {
+    const m = n / 1_000_000;
+    return fmtN(m, m >= 100 ? 0 : m >= 10 ? 1 : 2) + "M";
+  }
+  if (n >= 1_000) return fmtN(n / 1_000, 1) + "K";
+  return fmtN(n, 0);
+}
+
+function SupplyOverview({ stats }: { stats: TokenStats }) {
+  const minted = Number(stats.totalMinted);
+  const remaining = Number(stats.remainingMintable);
+  const pct = stats.mintPercentUsed;
+
+  const metrics = [
+    {
+      label: "Minteado",
+      value: fmtSupply(minted),
+      unit: TOKEN_SYMBOL,
+      hint: `${pct.toFixed(2)}% del cap`,
+      accent: "#E8D48B",
+    },
+    {
+      label: "Disponible",
+      value: fmtSupply(remaining),
+      unit: TOKEN_SYMBOL,
+      hint: "Listo para mint",
+      accent: "#26A17B",
+    },
+    {
+      label: "Cap máximo",
+      value: TOKEN_SUPPLY_LABEL,
+      unit: TOKEN_SYMBOL,
+      hint: "Hard cap on-chain",
+      accent: "#C9A227",
+    },
+  ];
+
   return (
-    <div style={css("background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 18px")}>
-      <div style={css("font:500 12px var(--font-hanken);color:#9A9AA0;margin-bottom:6px")}>{label}</div>
-      <div style={css("font:600 20px var(--font-mono);color:#E8D48B;letter-spacing:-0.02em")}>{value}</div>
-      {sub && <div style={css("font:400 11px var(--font-hanken);color:#6B6B76;margin-top:4px")}>{sub}</div>}
+    <div
+      data-token-supply
+      style={css(
+        "background:linear-gradient(145deg,#161616 0%,#12100A 100%);border:1px solid rgba(201,162,39,0.22);border-radius:18px;padding:22px 24px;margin-bottom:28px;overflow:hidden;position:relative"
+      )}
+    >
+      <div
+        style={css(
+          "position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#9A7B0A,#E8D48B,#9A7B0A);opacity:0.85"
+        )}
+      />
+
+      <div style={css("display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap")}>
+        <div>
+          <div style={css("font:600 11px var(--font-mono);color:#C9A227;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px")}>
+            Suministro {TOKEN_SYMBOL}
+          </div>
+          <div style={css("font:500 13px var(--font-hanken);color:#9A9AA0")}>
+            Emisión controlada · {stats.network === "testnet" ? "BNB Testnet" : "BNB Mainnet"}
+          </div>
+        </div>
+        <div style={css("font:600 22px var(--font-mono);color:#E8D48B;letter-spacing:-0.03em")}>
+          {pct.toFixed(1)}%
+        </div>
+      </div>
+
+      <div style={css("margin-bottom:20px")}>
+        <div style={css("display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px")}>
+          <span style={css("font:500 12px var(--font-hanken);color:#8A8A94")}>Progreso de emisión</span>
+          <span style={css("font:500 11px var(--font-mono);color:#6B6B76")}>
+            {fmtSupply(minted)} / {TOKEN_SUPPLY_LABEL}
+          </span>
+        </div>
+        <div style={css("height:8px;border-radius:999px;background:rgba(255,255,255,0.06);overflow:hidden")}>
+          <div
+            style={{
+              ...css("height:100%;border-radius:999px;background:linear-gradient(90deg,#9A7B0A,#E8D48B);transition:width .4s ease"),
+              width: `${Math.min(100, Math.max(pct, pct > 0 ? 0.4 : 0))}%`,
+            }}
+          />
+        </div>
+      </div>
+
+      <div data-token-metrics style={css("display:grid;grid-template-columns:repeat(3,1fr);gap:12px")}>
+        {metrics.map((m) => (
+          <div
+            key={m.label}
+            style={css(
+              "background:rgba(0,0,0,0.28);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px 14px;min-width:0"
+            )}
+          >
+            <div style={css("font:500 11px var(--font-hanken);color:#9A9AA0;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em")}>
+              {m.label}
+            </div>
+            <div style={css("display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;min-width:0")}>
+              <span
+                style={{
+                  ...css("font:700 var(--font-mono);color:#fff;letter-spacing:-0.03em;line-height:1"),
+                  fontSize: "clamp(20px, 4.5vw, 28px)",
+                  color: m.accent,
+                }}
+              >
+                {m.value}
+              </span>
+              <span style={css("font:600 12px var(--font-mono);color:#6B6B76")}>{m.unit}</span>
+            </div>
+            <div style={css("font:400 11px var(--font-hanken);color:#6B6B76;margin-top:8px")}>{m.hint}</div>
+          </div>
+        ))}
+      </div>
+
+      {stats.treasuryBalance != null && (
+        <div
+          style={css(
+            "margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"
+          )}
+        >
+          <span style={css("font:500 12px var(--font-hanken);color:#8A8A94")}>Tesorería</span>
+          <span style={css("font:600 14px var(--font-mono);color:#C8C8CE")}>
+            {fmtSupply(Number(stats.treasuryBalance))} {TOKEN_SYMBOL}
+            <span style={css("font:400 11px var(--font-mono);color:#6B6B76;margin-left:8px")}>
+              {stats.treasuryAddress?.slice(0, 8)}…{stats.treasuryAddress?.slice(-4)}
+            </span>
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -143,16 +264,7 @@ export default function TokenAdminPanel() {
         </div>
       )}
 
-      {stats && (
-        <div style={css("display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:28px")}>
-          <StatBox label="Minteado" value={fmtN(Number(stats.totalMinted), 0) + " " + TOKEN_SYMBOL} sub={`${stats.mintPercentUsed.toFixed(2)}% del cap`} />
-          <StatBox label="Disponible para mint" value={fmtN(Number(stats.remainingMintable), 0)} />
-          <StatBox label="Cap máximo" value={TOKEN_SUPPLY_LABEL} />
-          {stats.treasuryBalance != null && (
-            <StatBox label="Balance tesorería" value={fmtN(Number(stats.treasuryBalance), 0)} sub={stats.treasuryAddress?.slice(0, 10) + "…"} />
-          )}
-        </div>
-      )}
+      {stats && <SupplyOverview stats={stats} />}
 
       <div data-2col style={css("display:grid;grid-template-columns:1.1fr 0.9fr;gap:24px;align-items:start;margin-bottom:28px")}>
         <div style={css("background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:22px")}>

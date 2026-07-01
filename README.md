@@ -19,6 +19,18 @@ npm run dev
 
 Abre [http://localhost:3000](http://localhost:3000).
 
+### Git: desktop + Cursor iOS
+
+Si usas **Cursor en Mac y en iPhone**, cada uno puede tener historial distinto. Para evitar el error *"fetch first"* al hacer push:
+
+```bash
+./scripts/setup-git-hooks.sh   # una vez por clone (activa pre-push + pull rebase)
+git pull --rebase origin main  # al empezar sesión o antes de push
+git push origin main
+```
+
+El hook `.githooks/pre-push` **bloquea** el push si origin tiene commits que te faltan y te indica el rebase.
+
 ### Panel CRYPTOHOST (`/admin`)
 
 **No requiere Supabase ni Vercel.** Funciona en local y en producción solo con contraseña.

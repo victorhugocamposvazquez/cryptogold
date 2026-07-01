@@ -201,6 +201,9 @@ button { font-family: inherit; }
   [data-admin-form] { grid-template-columns: 1fr !important; }
   [data-admin-form] label { grid-column: 1 / -1 !important; }
 
+  [data-token-metrics] { grid-template-columns: 1fr !important; }
+  [data-token-supply] { padding: 18px 16px !important; }
+
   [data-modal-overlay] {
     align-items: flex-end !important;
     padding: 0 !important;

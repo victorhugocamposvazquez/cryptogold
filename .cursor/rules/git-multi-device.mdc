@@ -1,0 +1,29 @@
+---
+description: Evitar divergencia de git al usar Cursor desktop e iOS en el mismo repo
+alwaysApply: true
+---
+
+# Git multi-dispositivo (desktop + Cursor iOS)
+
+Este repo se edita desde **Cursor desktop** y **Cursor iOS**. Cada entorno puede tener un clone distinto; push directo a `main` sin sincronizar provoca rechazos de GitHub.
+
+## Antes de cualquier push
+
+1. Ejecutar siempre, en este orden:
+   ```bash
+   git fetch origin
+   git pull --rebase origin main
+   git push origin main
+   ```
+2. Si el push falla con "fetch first" o "rejected", **no** hacer force push a `main`. Hacer rebase y volver a push.
+
+## Reglas para el agente
+
+- Nunca `git push --force` a `main`/`master` salvo petición explícita del usuario.
+- Antes de `git push`, ejecutar `git fetch origin` y comprobar que no hay commits en `origin/main` que falten localmente (`git log HEAD..origin/main`). Si los hay, hacer `git pull --rebase origin main` primero.
+- Preferir commits pequeños y mensajes claros; si el usuario trabaja en iOS y desktop el mismo día, recordar sincronizar al inicio de la sesión.
+
+## Hooks del repo
+
+Tras clonar o en máquina nueva: `./scripts/setup-git-hooks.sh`  
+El hook `pre-push` bloquea push si vas detrás de origin.
