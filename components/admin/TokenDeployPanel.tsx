@@ -6,6 +6,9 @@ import { fmtN } from "@/lib/format";
 import { TOKEN_NAME, TOKEN_SUPPLY, TOKEN_SYMBOL } from "@/lib/brand";
 import { bnbNetworkLabel } from "@/lib/bnb";
 import { TOKEN_CONTRACT_DESCRIPTION, TOKEN_CONTRACT_TEMPLATE } from "@/lib/token/contract";
+import { deployTokenWithWallet } from "@/lib/token/wallet-actions";
+import { useAdminWallet } from "@/hooks/useAdminWallet";
+import WalletConnectBar from "@/components/admin/WalletConnectBar";
 import type { DeployRecord, TokenStats } from "@/lib/token/types";
 
 type Props = {
@@ -26,6 +29,7 @@ function contractTemplate(d: DeployRecord): string {
 }
 
 export default function TokenDeployPanel({ stats, onDeployed }: Props) {
+  const wallet = useAdminWallet();
   const [deployments, setDeployments] = useState<DeployRecord[]>([]);
   const [deployerOk, setDeployerOk] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -66,39 +70,82 @@ export default function TokenDeployPanel({ stats, onDeployed }: Props) {
     setInitialMint("0");
   }
 
+  const networkLabel = stats?.network === "mainnet" ? "BNB Mainnet" : "BNB Testnet";
+  const canDeployWithWallet = wallet.isConnected && wallet.isCorrectChain && wallet.walletReady;
+  const canDeployWithServer = deployerOk;
+  const canDeploy = canDeployWithWallet || canDeployWithServer;
+
   async function submitDeploy(e: React.FormEvent) {
     e.preventDefault();
     if (!confirm) {
       setError("Confirma que has revisado los parámetros del contrato");
       return;
     }
+    if (!canDeploy) {
+      setError("Conecta MetaMask en la red correcta o configura TOKEN_DEPLOYER_PRIVATE_KEY en el servidor");
+      return;
+    }
+
     setDeploying(true);
     setError("");
     setSuccess("");
     try {
-      const res = await fetch("/api/token/deploy", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      let deployment: DeployRecord;
+
+      if (canDeployWithWallet && wallet.walletClient && wallet.publicClient && wallet.address) {
+        const result = await deployTokenWithWallet(wallet.walletClient, wallet.publicClient, {
           name,
           symbol,
           maxSupply,
           treasury: treasury.trim() || undefined,
           initialMint: initialMint.trim() || "0",
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Deploy fallido");
-      const dep = data.deployment as DeployRecord;
-      const base = deployExplorerBase(dep);
+          deployerAddress: wallet.address,
+        });
+
+        const res = await fetch("/api/token/deploy", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "register",
+            txHash: result.hash,
+            deployer: result.deployer,
+            name: result.name,
+            symbol: result.symbol,
+            maxSupply: result.maxSupply,
+            initialMint: result.initialMint,
+            treasury: result.treasury,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "No se pudo registrar el deploy");
+        deployment = data.deployment as DeployRecord;
+      } else {
+        const res = await fetch("/api/token/deploy", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            symbol,
+            maxSupply,
+            treasury: treasury.trim() || undefined,
+            initialMint: initialMint.trim() || "0",
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Deploy fallido");
+        deployment = data.deployment as DeployRecord;
+      }
+
+      const base = deployExplorerBase(deployment);
       setSuccess(
-        `Token ${dep.symbol} (${dep.name}) desplegado · ${shortAddr(dep.address)} · ${bnbNetworkLabel(dep.network)}`
+        `Token ${deployment.symbol} (${deployment.name}) desplegado · ${shortAddr(deployment.address)} · ${bnbNetworkLabel(deployment.network)}`
       );
       setConfirm(false);
       await load();
       onDeployed();
-      window.open(`${base}/address/${dep.address}`, "_blank", "noopener,noreferrer");
+      window.open(`${base}/address/${deployment.address}`, "_blank", "noopener,noreferrer");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Deploy fallido");
     } finally {
@@ -124,15 +171,20 @@ export default function TokenDeployPanel({ stats, onDeployed }: Props) {
     }
   }
 
-  const networkLabel = stats?.network === "mainnet" ? "BNB Mainnet" : "BNB Testnet";
-
   return (
     <div>
-      {!deployerOk && (
+      <WalletConnectBar />
+
+      {!canDeploy && (
         <div style={css("background:#161616;border:1px solid rgba(224,82,82,0.35);border-radius:14px;padding:16px 18px;margin-bottom:20px;font:400 14px var(--font-hanken);color:#ffb4b4")}>
-          Configura{" "}
-          <code style={css("font-family:var(--font-mono);color:#C9A227")}>TOKEN_DEPLOYER_PRIVATE_KEY</code> (o{" "}
-          <code style={css("font-family:var(--font-mono);color:#C9A227")}>TOKEN_OWNER_PRIVATE_KEY</code>) en el servidor y asegúrate de tener tBNB para gas.
+          Conecta MetaMask en {wallet.targetChainLabel} o configura{" "}
+          <code style={css("font-family:var(--font-mono);color:#C9A227")}>TOKEN_DEPLOYER_PRIVATE_KEY</code> en Vercel (modo legacy).
+        </div>
+      )}
+
+      {canDeployWithServer && !canDeployWithWallet && (
+        <div style={css("background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;margin-bottom:20px;font:400 13px var(--font-hanken);color:#9A9AA0")}>
+          Modo servidor activo (clave en Vercel). Recomendado: conectar wallet arriba y quitar claves privadas del hosting.
         </div>
       )}
 
@@ -221,12 +273,16 @@ export default function TokenDeployPanel({ stats, onDeployed }: Props) {
 
             <button
               type="submit"
-              disabled={deploying || !deployerOk}
+              disabled={deploying || !canDeploy}
               style={css(
-                `appearance:none;cursor:${deploying || !deployerOk ? "not-allowed" : "pointer"};background:${deployerOk ? "#C9A227" : "#3A3010"};color:#0D0D0D;border:none;border-radius:10px;padding:14px 20px;font:600 15px var(--font-hanken);opacity:${deploying ? 0.7 : 1}`
+                `appearance:none;cursor:${deploying || !canDeploy ? "not-allowed" : "pointer"};background:${canDeploy ? "#C9A227" : "#3A3010"};color:#0D0D0D;border:none;border-radius:10px;padding:14px 20px;font:600 15px var(--font-hanken);opacity:${deploying ? 0.7 : 1}`
               )}
             >
-              {deploying ? "Desplegando contrato…" : "Desplegar en " + networkLabel}
+              {deploying
+                ? "Desplegando contrato…"
+                : canDeployWithWallet
+                  ? "Firmar deploy en MetaMask"
+                  : "Desplegar en " + networkLabel}
             </button>
           </form>
         </div>

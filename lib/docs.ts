@@ -1,5 +1,5 @@
 import type { Doc } from "./content";
-import { BRAND, TOKEN_SYMBOL, TOKEN_SUPPLY_LABEL, CHAINS, STRUCTURED_BACKING_LABEL, STRUCTURED_BACKING_FULL, CRYPTOHOST_TRANSFERS, LEGAL_JURISDICTIONS, BANKING_HUBS } from "./brand";
+import { BRAND, TOKEN_SYMBOL, TOKEN_SUPPLY_LABEL, CHAINS, STRUCTURED_BACKING_LABEL, STRUCTURED_BACKING_FULL, CRYPTOHOST_TRANSFERS, OPS_CENTER_NAME, OPS_CENTER_TAGLINE, LEGAL_JURISDICTIONS, BANKING_HUBS } from "./brand";
 
 /** Doc pages (whitepaper, tokenomics, docs, audit, support, legal). */
 export const docMap: Record<string, Doc> = {
@@ -109,9 +109,9 @@ export const docMap: Record<string, Doc> = {
   },
   cryptohost: {
     eyebrow: "Infraestructura",
-    title: "CRYPTOHOST",
-    meta: `${CRYPTOHOST_TRANSFERS} transferencias · Liquidación automatizada`,
-    subtitle: "Sistema automatizado de transferencias y liquidación que respalda compras, swaps y acreditación de CGOLD a escala global.",
+    title: OPS_CENTER_NAME,
+    meta: `${OPS_CENTER_TAGLINE} · ${CRYPTOHOST_TRANSFERS} transferencias`,
+    subtitle: "Centro de operaciones CryptoGold: transferencias, liquidación y acreditación de CGOLD a escala global.",
     hasStats: true,
     stats: [
       { value: CRYPTOHOST_TRANSFERS, label: "Transferencias históricas" },
@@ -120,12 +120,12 @@ export const docMap: Record<string, Doc> = {
       { value: "24/7", label: "Operación automática" },
     ],
     sections: [
-      { h: "Qué es CRYPTOHOST", p: ["CRYPTOHOST es la capa de infraestructura automatizada que procesa transferencias cripto y fiat-to-wallet, acredita CGOLD y reconcilia operaciones sin intervención manual en el flujo estándar.", `Con un historial operativo de más de ${CRYPTOHOST_TRANSFERS} transferencias, el sistema está diseñado para volumen institucional y retail simultáneo.`] },
-      { h: "Flujos soportados", p: ["Compra con USDT, USDC, ETH, BTC → acreditación CGOLD en wallet del usuario.", "Compra con tarjeta (Transak / MoonPay) → webhook → CRYPTOHOST → acreditación on-chain.", "Swaps y transferencias cross-chain coordinadas con puentes auditados."] },
+      { h: `Qué es ${OPS_CENTER_NAME}`, p: [`${OPS_CENTER_NAME} es el centro de operaciones que procesa transferencias cripto y fiat-to-wallet, acredita CGOLD y reconcilia operaciones sin intervención manual en el flujo estándar.`, `Con un historial operativo de más de ${CRYPTOHOST_TRANSFERS} transferencias, el sistema está diseñado para volumen institucional y retail simultáneo.`] },
+      { h: "Flujos soportados", p: ["Compra con USDT, USDC, ETH, BTC → acreditación CGOLD en wallet del usuario.", `Compra con tarjeta (Transak / MoonPay) → webhook → ${OPS_CENTER_NAME} → acreditación on-chain.`, "Swaps y transferencias cross-chain coordinadas con puentes auditados."] },
       { h: "Seguridad y trazabilidad", p: ["Cada operación genera un ID único (formato CGD-XXXXXX) rastreable en historial de cartera, recibo descargable y backoffice interno.", "Reintentos automáticos ante congestión de red. Modo conservador si el oráculo de oro detecta discrepancias anómalas.", "Sin custodia centralizada: los tokens se envían siempre a la wallet del usuario."] },
       { h: "Backoffice operadores", p: ["Panel interno en /admin: dashboard, listado de transferencias, detalle por CGD-ID, reintentos manuales y regeneración del histórico visible.", "5.000 operaciones trazables en el registro público de la home, paginables vía /api/cryptohost/history.", "Acceso protegido con CRYPTOHOST_ADMIN_PASSWORD."] },
       { h: "Integración para desarrolladores", p: ["POST /api/cryptohost/transfers — registrar operación (compra, swap, fiat).", "GET /api/cryptohost/transfers?recent=N — actividad reciente pública.", "GET /api/cryptohost/status — salud del servicio e incidencias abiertas.", "Estados: pending, processing, confirmed, failed."] },
-      { h: "Soporte", p: ["Si una operación queda pendiente más de 15 minutos, contacta soporte@cryptogold.io con el ID de transacción.", "Consulta /docs/status para incidencias conocidas de CRYPTOHOST o proveedores de pago."] },
+      { h: "Soporte", p: ["Si una operación queda pendiente más de 15 minutos, contacta soporte@cryptogold.io con el ID de transacción.", `Consulta /docs/status para incidencias conocidas de ${OPS_CENTER_NAME} o proveedores de pago.`] },
     ],
   },
   listings: {

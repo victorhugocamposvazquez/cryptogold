@@ -1,4 +1,5 @@
 import { isSupabaseAdminConfigured } from "@/lib/env";
+import { OPS_CENTER_NAME } from "@/lib/brand";
 import { generateTransferId } from "./id";
 import * as hist from "./history";
 import * as mem from "./memory";
@@ -296,7 +297,7 @@ export async function getServiceStatus(): Promise<ServiceStatus> {
   }
 
   return {
-    service: "CRYPTOHOST",
+    service: OPS_CENTER_NAME,
     status,
     message,
     stats,

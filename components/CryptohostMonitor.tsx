@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { css } from "@/lib/css";
-import { CRYPTOHOST_TRANSFERS, TOKEN_SYMBOL } from "@/lib/brand";
+import { CRYPTOHOST_TRANSFERS, OPS_CENTER_NAME, TOKEN_SYMBOL } from "@/lib/brand";
 import type { CryptohostTransfer, TransferKind } from "@/lib/cryptohost/types";
 import { fmtN } from "@/lib/format";
 
@@ -155,7 +155,7 @@ export default function CryptohostMonitor({ compact = false }: { compact?: boole
               </span>
             </div>
             <h3 style={css(`font:600 ${compact ? "20px" : "26px"} var(--font-hanken);color:#fff;margin:0 0 4px;letter-spacing:-0.02em`)}>
-              Monitor CRYPTOHOST
+              Monitor {OPS_CENTER_NAME}
             </h3>
             <p style={css("font:400 13px var(--font-hanken);color:#8A8A80;margin:0")}>
               {CRYPTOHOST_TRANSFERS} operaciones históricas · {registry} visibles en registro · IDs trazables CGD
@@ -225,7 +225,7 @@ export default function CryptohostMonitor({ compact = false }: { compact?: boole
             {loading && (
               <tr>
                 <td colSpan={7} style={css("padding:32px 16px;color:#8A8A80;text-align:center")}>
-                  Sincronizando registro CRYPTOHOST…
+                  Sincronizando registro {OPS_CENTER_NAME}…
                 </td>
               </tr>
             )}
@@ -265,7 +265,7 @@ export default function CryptohostMonitor({ compact = false }: { compact?: boole
       <div data-cryptohost-cards style={css(`${compact ? "max-height:340px" : "max-height:480px"};overflow:auto`)}>
         {loading && (
           <div style={css("padding:32px 16px;color:#8A8A80;text-align:center;font:400 13px var(--font-hanken)")}>
-            Sincronizando registro CRYPTOHOST…
+            Sincronizando registro {OPS_CENTER_NAME}…
           </div>
         )}
         {!loading && filtered.length === 0 && (
@@ -312,7 +312,7 @@ export default function CryptohostMonitor({ compact = false }: { compact?: boole
 
       {!compact && (
         <div style={css("padding:12px 20px;border-top:1px solid #2A2410;background:#12100A;font:400 11px var(--font-hanken);color:#6B6B76;text-align:center")}>
-          Cada fila corresponde a una liquidación procesada por CRYPTOHOST. Los IDs CGD son únicos y auditables.
+          Cada fila corresponde a una liquidación procesada por {OPS_CENTER_NAME}. Los IDs CGD son únicos y auditables.
         </div>
       )}
     </div>

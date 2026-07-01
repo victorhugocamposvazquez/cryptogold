@@ -6,6 +6,10 @@ export const TOKEN_NAME = "CryptoGold Token";
 export const TOKEN_SUPPLY = 12_000_000_000;
 export const TOKEN_SUPPLY_LABEL = "12,000M";
 
+/** Centro de operaciones (/cryptohost, /admin) — misma marca que el producto */
+export const OPS_CENTER_NAME = BRAND;
+export const OPS_CENTER_TAGLINE = "Centro de operaciones";
+
 /** Each CGOLD represents this fraction of a troy ounce of gold (spot-linked). */
 export const OZ_PER_TOKEN = 0.001;
 

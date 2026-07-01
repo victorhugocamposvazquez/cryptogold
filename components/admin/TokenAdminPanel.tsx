@@ -4,7 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import { css } from "@/lib/css";
 import { fmtN } from "@/lib/format";
 import { TOKEN_SYMBOL, TOKEN_SUPPLY_LABEL } from "@/lib/brand";
+import { isAddress, type Address } from "viem";
 import { ALLOCATION_TARGETS, MINT_CATEGORIES } from "@/lib/token/mint-log";
+import { mintTokenWithWallet } from "@/lib/token/wallet-actions";
+import { useAdminWallet } from "@/hooks/useAdminWallet";
+import WalletConnectBar from "@/components/admin/WalletConnectBar";
 import type { MintCategory, MintLogEntry, TokenStats } from "@/lib/token/types";
 import TokenDeployPanel from "./TokenDeployPanel";
 
@@ -147,6 +151,7 @@ function SupplyOverview({ stats }: { stats: TokenStats }) {
 }
 
 export default function TokenAdminPanel() {
+  const wallet = useAdminWallet();
   const [tab, setTab] = useState<Tab>("manage");
   const [stats, setStats] = useState<TokenStats | null>(null);
   const [mints, setMints] = useState<MintLogEntry[]>([]);
@@ -193,15 +198,57 @@ export default function TokenAdminPanel() {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch("/api/token/mint", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to, amount, category, note: note || undefined }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Mint fallido");
-      setSuccess(`Mint OK · ${data.mint.id} · tx ${data.mint.txHash.slice(0, 10)}…`);
+      const walletOwner = wallet.isOwner(stats?.owner);
+      const serverOwner = stats?.operatorIsOwner;
+      const useWallet =
+        wallet.isConnected && wallet.isCorrectChain && wallet.walletReady && walletOwner;
+
+      if (!useWallet && !serverOwner) {
+        throw new Error("Conecta la wallet owner en MetaMask o configura TOKEN_OWNER_PRIVATE_KEY en el servidor");
+      }
+
+      if (useWallet) {
+        if (!stats?.contractAddress || !wallet.walletClient || !wallet.publicClient || !wallet.address) {
+          throw new Error("Wallet o contrato no disponible");
+        }
+        if (!isAddress(to.trim())) throw new Error("Dirección destino inválida");
+
+        const txHash = await mintTokenWithWallet(
+          wallet.walletClient,
+          wallet.publicClient,
+          stats.contractAddress as Address,
+          to.trim() as Address,
+          amount
+        );
+
+        const res = await fetch("/api/token/mint", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to,
+            amount,
+            category,
+            note: note || undefined,
+            txHash,
+            signer: wallet.address,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Mint fallido");
+        setSuccess(`Mint OK · ${data.mint.id} · tx ${String(data.mint.txHash).slice(0, 10)}… (wallet)`);
+      } else {
+        const res = await fetch("/api/token/mint", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ to, amount, category, note: note || undefined }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Mint fallido");
+        setSuccess(`Mint OK · ${data.mint.id} · tx ${data.mint.txHash.slice(0, 10)}… (servidor)`);
+      }
+
       setTo("");
       setAmount("");
       setNote("");
@@ -212,6 +259,15 @@ export default function TokenAdminPanel() {
       setMinting(false);
     }
   }
+
+  const walletCanMint =
+    stats?.configured &&
+    wallet.isConnected &&
+    wallet.isCorrectChain &&
+    wallet.walletReady &&
+    wallet.isOwner(stats?.owner);
+  const serverCanMint = stats?.configured && stats.operatorIsOwner;
+  const canMint = walletCanMint || serverCanMint;
 
   const explorerBase = stats?.explorer ?? "https://testnet.bscscan.com";
 
@@ -263,6 +319,7 @@ export default function TokenAdminPanel() {
 
       {tab === "manage" && (
         <>
+      <WalletConnectBar ownerAddress={stats?.owner} />
 
       {error && (
         <div style={css("background:rgba(224,82,82,0.12);border:1px solid rgba(224,82,82,0.35);color:#ffb4b4;border-radius:12px;padding:14px 16px;margin-bottom:20px;font:500 14px var(--font-hanken)")}>
@@ -285,13 +342,26 @@ export default function TokenAdminPanel() {
         </div>
       )}
 
-      {stats?.configured && !stats.operatorConfigured && (
+      {stats?.configured && !canMint && (
         <div style={css("background:#161616;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;margin-bottom:24px;font:400 14px var(--font-hanken);color:#C8C8CE")}>
-          Solo lectura: añade <code style={css("font-family:var(--font-mono);color:#C9A227")}>TOKEN_OWNER_PRIVATE_KEY</code> (owner del contrato) para habilitar mint desde el backoffice.
+          Conecta MetaMask con la wallet <strong style={css("color:#E8D48B")}>owner</strong> del contrato
+          {stats.owner ? (
+            <>
+              {" "}
+              (<span style={css("font-family:var(--font-mono)")}>{stats.owner.slice(0, 10)}…</span>)
+            </>
+          ) : null}{" "}
+          o configura <code style={css("font-family:var(--font-mono);color:#C9A227")}>TOKEN_OWNER_PRIVATE_KEY</code> en Vercel (legacy).
         </div>
       )}
 
-      {stats?.configured && stats.operatorConfigured && !stats.operatorIsOwner && (
+      {stats?.configured && serverCanMint && !walletCanMint && (
+        <div style={css("background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px 16px;margin-bottom:24px;font:400 13px var(--font-hanken);color:#9A9AA0")}>
+          Mint por servidor activo. Recomendado: conectar wallet owner y eliminar claves privadas de Vercel.
+        </div>
+      )}
+
+      {stats?.configured && stats.operatorConfigured && !stats.operatorIsOwner && !walletCanMint && (
         <div style={css("background:rgba(224,82,82,0.1);border:1px solid rgba(224,82,82,0.3);border-radius:14px;padding:16px 18px;margin-bottom:24px;font:400 14px var(--font-hanken);color:#ffb4b4")}>
           La clave configurada no es owner del contrato. Owner on-chain:{" "}
           <span style={css("font-family:var(--font-mono)")}>{stats.owner}</span>
@@ -367,12 +437,16 @@ export default function TokenAdminPanel() {
 
             <button
               type="submit"
-              disabled={minting || !stats?.configured || !stats.operatorIsOwner}
+              disabled={minting || !canMint}
               style={css(
-                `appearance:none;cursor:${minting || !stats?.operatorIsOwner ? "not-allowed" : "pointer"};background:${stats?.operatorIsOwner ? "#C9A227" : "#3A3010"};color:#0D0D0D;border:none;border-radius:10px;padding:14px 20px;font:600 15px var(--font-hanken);opacity:${minting ? 0.7 : 1}`
+                `appearance:none;cursor:${minting || !canMint ? "not-allowed" : "pointer"};background:${canMint ? "#C9A227" : "#3A3010"};color:#0D0D0D;border:none;border-radius:10px;padding:14px 20px;font:600 15px var(--font-hanken);opacity:${minting ? 0.7 : 1}`
               )}
             >
-              {minting ? "Firmando transacción…" : `Mint ${stats?.tokenSymbol ?? TOKEN_SYMBOL} on-chain`}
+              {minting
+                ? "Firmando transacción…"
+                : walletCanMint
+                  ? `Firmar mint en MetaMask`
+                  : `Mint ${stats?.tokenSymbol ?? TOKEN_SYMBOL} on-chain`}
             </button>
           </form>
         </div>

@@ -19,7 +19,7 @@ const COLS: { title: string; links: [string, string][] }[] = [
     title: "Proyecto",
     links: [
       ["/docs/legal-structure", "Estructura legal"],
-      ["/cryptohost", "Centro CRYPTOHOST"],
+      ["/cryptohost", "Centro CryptoGold"],
       ["/docs/listings", "CoinMarketCap · Exchanges"],
     ],
   },

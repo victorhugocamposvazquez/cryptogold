@@ -47,7 +47,7 @@ export type TransferStats = {
 };
 
 export type ServiceStatus = {
-  service: "CRYPTOHOST";
+  service: "CryptoGold";
   status: "operational" | "degraded" | "outage";
   message: string;
   stats: TransferStats;

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyAdminRequest } from "@/lib/cryptohost/admin-auth";
-import { activateDeployment, deployToken, getDeploymentHistory } from "@/lib/token/service";
+import { activateDeployment, deployToken, getDeploymentHistory, registerDeploymentFromTx } from "@/lib/token/service";
 import { isTokenDeployerConfigured } from "@/lib/token/client";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +27,19 @@ export async function POST(req: Request) {
       const record = activateDeployment(String(body.id ?? ""));
       if (!record) return NextResponse.json({ error: "Despliegue no encontrado" }, { status: 404 });
       return NextResponse.json({ ok: true, deployment: record });
+    }
+
+    if (body.action === "register") {
+      const deployment = await registerDeploymentFromTx({
+        txHash: String(body.txHash ?? ""),
+        deployer: String(body.deployer ?? ""),
+        name: String(body.name ?? ""),
+        symbol: String(body.symbol ?? ""),
+        maxSupply: String(body.maxSupply ?? ""),
+        initialMint: body.initialMint ? String(body.initialMint) : undefined,
+        treasury: body.treasury ? String(body.treasury) : undefined,
+      });
+      return NextResponse.json({ ok: true, deployment });
     }
 
     const deployment = await deployToken({

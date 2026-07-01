@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import AdminShell from "@/components/admin/AdminShell";
 import AdminLogin from "@/components/admin/AdminLogin";
+import AdminWagmiProvider from "@/components/admin/AdminWagmiProvider";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -28,5 +29,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <AdminLogin onSuccess={() => setAuthed(true)} />;
   }
 
-  return <AdminShell>{children}</AdminShell>;
+  return (
+    <AdminWagmiProvider>
+      <AdminShell>{children}</AdminShell>
+    </AdminWagmiProvider>
+  );
 }

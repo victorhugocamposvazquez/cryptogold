@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { css } from "@/lib/css";
 import type { Doc } from "@/lib/content";
+import { OPS_CENTER_NAME } from "@/lib/brand";
 import type { ServiceStatus } from "@/lib/cryptohost/types";
 
 const STATUS_COLOR: Record<string, string> = {
@@ -92,7 +93,7 @@ export function ServiceStatusPanel({ doc }: { doc: Doc }) {
         </p>
         <div style={css("display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px")}>
           {[
-            ["CRYPTOHOST", live?.status === "operational" ? "Operativo" : live?.status ?? "—"],
+            [OPS_CENTER_NAME, live?.status === "operational" ? "Operativo" : live?.status ?? "—"],
             ["Uptime", stats?.uptimePct ? stats.uptimePct + "%" : "99,9%"],
             ["Liquidación", stats?.avgConfirmMs ? (stats.avgConfirmMs / 1000).toFixed(1) + " s" : "< 3 s"],
             ["24 h", stats?.last24h != null ? String(stats.last24h) : "—"],

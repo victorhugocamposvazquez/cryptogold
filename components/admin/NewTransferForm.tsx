@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { css } from "@/lib/css";
-import { TOKEN_SYMBOL } from "@/lib/brand";
+import { OPS_CENTER_NAME, TOKEN_SYMBOL } from "@/lib/brand";
 import type { CreateTransferInput, CryptohostTransfer, TransferKind } from "@/lib/cryptohost/types";
 import { fmtN } from "@/lib/format";
 
@@ -35,7 +35,7 @@ export default function NewTransferForm({ onCreated, compact }: Props) {
   const [payAmount, setPayAmount] = useState("1000");
   const [receiveAmount, setReceiveAmount] = useState("280");
   const [chain, setChain] = useState("BNB Chain");
-  const [provider, setProvider] = useState("CRYPTOHOST");
+  const [provider, setProvider] = useState(OPS_CENTER_NAME);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [last, setLast] = useState<CryptohostTransfer | null>(null);
@@ -50,7 +50,7 @@ export default function NewTransferForm({ onCreated, compact }: Props) {
     const pAmt = pay === "BTC" ? (Math.random() * 0.5 + 0.01).toFixed(4) : pay === "ETH" ? (Math.random() * 5 + 0.2).toFixed(3) : String(Math.floor(Math.random() * 180000) + 500);
     setPayAmount(pAmt);
     setReceiveAmount(String(Math.floor(Math.random() * 400000) + 800));
-    setProvider(k === "fiat_credit" ? (Math.random() > 0.5 ? "Transak" : "MoonPay") : "CRYPTOHOST");
+    setProvider(k === "fiat_credit" ? (Math.random() > 0.5 ? "Transak" : "MoonPay") : OPS_CENTER_NAME);
   }
 
   async function submit(e: React.FormEvent) {
@@ -111,7 +111,7 @@ export default function NewTransferForm({ onCreated, compact }: Props) {
             Nueva transferencia
           </h2>
           <p style={css("font:400 13px var(--font-hanken);color:#9A9AA0;margin:0")}>
-            Registra una liquidación CRYPTOHOST. Aparecerá al instante en el monitor con ID CGD.
+            Registra una liquidación en {OPS_CENTER_NAME}. Aparecerá al instante en el monitor con ID CGD.
           </p>
         </div>
         <button

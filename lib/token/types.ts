@@ -1,5 +1,12 @@
 export type MintCategory = "marketing" | "liquidity" | "presale" | "team" | "treasury" | "other";
 
+export type MintInput = {
+  to: string;
+  amount: string;
+  category: MintCategory;
+  note?: string;
+};
+
 export type MintLogEntry = {
   id: string;
   to: string;
@@ -59,4 +66,6 @@ export type DeployInput = {
   maxSupply: string;
   treasury?: string;
   initialMint?: string;
+  /** When treasury empty — wallet address used as genesis treasury */
+  deployerFallback?: string;
 };

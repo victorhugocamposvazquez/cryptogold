@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { css } from "@/lib/css";
 import CryptohostMonitor from "@/components/CryptohostMonitor";
+import { OPS_CENTER_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: "CRYPTOHOST — Monitor de liquidación | CryptoGold",
-  description: "Registro en tiempo real de transferencias CRYPTOHOST. Más de 5 millones de operaciones históricas con trazabilidad CGD-ID.",
+  title: `${OPS_CENTER_NAME} — Monitor de liquidación`,
+  description: `Registro en tiempo real de transferencias ${OPS_CENTER_NAME}. Más de 5 millones de operaciones históricas con trazabilidad CGD-ID.`,
 };
 
 export default function CryptohostPage() {
@@ -16,7 +17,7 @@ export default function CryptohostPage() {
         </p>
         <h1 data-ops-page-title style={css("font:700 36px var(--font-hanken);color:#fff;margin:0 0 10px;letter-spacing:-0.035em")}>Registro en vivo</h1>
         <p data-ops-page-sub style={css("font:400 15px/1.6 var(--font-hanken);color:#9A9AA0;margin:0;max-width:640px")}>
-          Transferencias procesadas por CRYPTOHOST con trazabilidad CGD-ID. Usa el menú lateral para operaciones, liquidaciones e histórico.
+          Transferencias procesadas por {OPS_CENTER_NAME} con trazabilidad CGD-ID. Usa el menú lateral para operaciones, liquidaciones e histórico.
         </p>
       </div>
       <CryptohostMonitor />

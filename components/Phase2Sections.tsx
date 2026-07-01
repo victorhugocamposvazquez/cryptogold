@@ -9,6 +9,8 @@ import {
   STRUCTURED_BACKING_LABEL,
   STRUCTURED_BACKING_FULL,
   CRYPTOHOST_TRANSFERS,
+  OPS_CENTER_NAME,
+  OPS_CENTER_TAGLINE,
   SUPPORT_HUMAN_TEAM,
   SUPPORT_SLA,
 } from "@/lib/brand";
@@ -84,9 +86,9 @@ export function CryptohostSection() {
             <span style={css("width:6px;height:6px;border-radius:50%;background:#26A17B")} />
             <span style={css("font:600 11px var(--font-mono);color:#C9A227;text-transform:uppercase;letter-spacing:0.06em")}>Operativo · 24/7</span>
           </div>
-          <h2 style={css("font:600 38px var(--font-hanken);letter-spacing:-0.035em;margin:0 0 16px;color:#fff")}>CRYPTOHOST</h2>
+          <h2 style={css("font:600 38px var(--font-hanken);letter-spacing:-0.035em;margin:0 0 16px;color:#fff")}>{OPS_CENTER_NAME}</h2>
           <p style={css("font:400 17px/1.6 var(--font-hanken);color:#B8B8BD;margin:0 0 24px;max-width:480px")}>
-            Motor de liquidación automatizada con más de {CRYPTOHOST_TRANSFERS} transferencias históricas. Cada compra, swap y acreditación de {TOKEN_SYMBOL} pasa por infraestructura probada a escala global.
+            {OPS_CENTER_TAGLINE} · motor de liquidación con más de {CRYPTOHOST_TRANSFERS} transferencias históricas. Cada compra, swap y acreditación de {TOKEN_SYMBOL} pasa por infraestructura probada a escala global.
           </p>
           <div style={css("display:flex;flex-wrap:wrap;gap:12px;margin-bottom:28px")}>
             {[
@@ -101,7 +103,7 @@ export function CryptohostSection() {
             ))}
           </div>
           <Hov as="button" onClick={() => router.push("/cryptohost")} style="appearance:none;cursor:pointer;background:#C9A227;color:#0D0D0D;border:none;border-radius:12px;padding:14px 24px;font:600 15px var(--font-hanken);margin-right:10px" hover="background:#E8D48B">
-            Centro CRYPTOHOST
+            Centro {OPS_CENTER_NAME}
           </Hov>
           <Hov as="button" onClick={() => router.push("/docs/cryptohost")} style="appearance:none;cursor:pointer;background:transparent;color:#C9A227;border:1px solid #3A3010;border-radius:12px;padding:14px 24px;font:600 15px var(--font-hanken)" hover="border-color:#C9A227">
             Documentación
@@ -109,7 +111,7 @@ export function CryptohostSection() {
         </div>
         <div style={css("background:#1A1508;border:1px solid #2A2410;border-radius:20px;padding:24px")}>
           <div style={css("font:600 12px var(--font-mono);color:#8A8A80;text-transform:uppercase;margin-bottom:16px")}>Flujo de liquidación</div>
-          {["Usuario paga USDT / tarjeta", "CRYPTOHOST valida y enruta", "Smart contract acredita CGOLD", "Wallet del usuario · self-custody"].map((step, i) => (
+          {["Usuario paga USDT / tarjeta", `${OPS_CENTER_NAME} valida y enruta`, "Smart contract acredita CGOLD", "Wallet del usuario · self-custody"].map((step, i) => (
             <div key={i} style={css("display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:" + (i < 3 ? "1px solid #2A2410" : "none"))}>
               <span style={css("flex:none;width:24px;height:24px;border-radius:50%;background:#C9A227;color:#0D0D0D;display:flex;align-items:center;justify-content:center;font:600 11px var(--font-mono)")}>{i + 1}</span>
               <span style={css("font:400 14px var(--font-hanken);color:#E4E4E6")}>{step}</span>
@@ -120,7 +122,7 @@ export function CryptohostSection() {
       <CryptohostMonitor compact />
       <p style={css("text-align:center;margin:16px 0 0;font:400 12px var(--font-hanken);color:#6B6B76")}>
         <Link href="/cryptohost" prefetch style={css("color:#9A7B0A;text-decoration:none;font-weight:600")}>
-          Centro de operaciones CRYPTOHOST →
+          {OPS_CENTER_TAGLINE} {OPS_CENTER_NAME} →
         </Link>
       </p>
     </section>

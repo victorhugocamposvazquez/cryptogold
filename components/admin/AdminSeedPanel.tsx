@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { DEFAULT_HISTORY_COUNT } from "@/lib/cryptohost/seed";
+import { OPS_CENTER_NAME } from "@/lib/brand";
 
 type SeedSummary = {
   count: number;
@@ -47,7 +48,7 @@ export default function AdminSeedPanel() {
     <div style={css("background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;margin-top:32px")}>
       <h2 style={css("font:600 18px var(--font-hanken);margin:0 0 8px")}>Generar histórico de liquidación</h2>
       <p style={css("font:400 14px var(--font-hanken);color:#9A9AA0;margin:0 0 20px;max-width:640px")}>
-        Crea un registro de operaciones CRYPTOHOST con wallets, importes, redes y fechas distribuidas desde 2023.
+        Crea un registro de operaciones {OPS_CENTER_NAME} con wallets, importes, redes y fechas distribuidas desde 2023.
         Se persiste en servidor y alimenta el feed público de la home.
       </p>
 

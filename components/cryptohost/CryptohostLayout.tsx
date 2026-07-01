@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import CryptohostNav from "./CryptohostNav";
 import { css } from "@/lib/css";
 import { Logo } from "@/components/ui";
+import { OPS_CENTER_NAME } from "@/lib/brand";
 
 const BOTTOM_TABS = [
   { href: "/cryptohost", label: "Monitor", match: (p: string) => p === "/cryptohost" },
@@ -25,7 +26,7 @@ function pageTitle(pathname: string) {
   if (pathname.startsWith("/admin/transfers/new")) return "Nueva op.";
   if (pathname.startsWith("/admin/transfers")) return "Transferencias";
   if (pathname.startsWith("/admin/historial")) return "Histórico";
-  return "CRYPTOHOST";
+  return OPS_CENTER_NAME;
 }
 
 export default function CryptohostLayout({ children }: { children: React.ReactNode }) {
@@ -94,7 +95,7 @@ export default function CryptohostLayout({ children }: { children: React.ReactNo
 
         <main data-ops-main style={css("flex:1;padding:32px 40px;overflow:auto;min-width:0")}>{children}</main>
 
-        <nav data-ops-bottom aria-label="Navegación CRYPTOHOST">
+        <nav data-ops-bottom aria-label={`Navegación ${OPS_CENTER_NAME}`}>
           {BOTTOM_TABS.map((tab) => {
             const active = tab.match(pathname);
             return (

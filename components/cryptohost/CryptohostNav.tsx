@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { css } from "@/lib/css";
 import { Logo } from "@/components/ui";
+import { OPS_CENTER_NAME, OPS_CENTER_TAGLINE } from "@/lib/brand";
 
 type NavItem = {
   href: string;
@@ -120,8 +121,8 @@ export default function CryptohostNav({ onNavigate, onClose }: Props) {
         <Link href="/cryptohost" onClick={handleNavigate} style={css("display:flex;align-items:center;gap:10px;text-decoration:none;min-width:0")}>
           <Logo height={32} />
           <div>
-            <div style={css("font:700 14px var(--font-hanken);letter-spacing:0.04em;color:#fff")}>CRYPTOHOST</div>
-            <div style={css("font:400 11px var(--font-hanken);color:#9A9AA0")}>Centro de operaciones</div>
+            <div style={css("font:700 14px var(--font-hanken);letter-spacing:0.02em;color:#fff")}>{OPS_CENTER_NAME}</div>
+            <div style={css("font:400 11px var(--font-hanken);color:#9A9AA0")}>{OPS_CENTER_TAGLINE}</div>
           </div>
         </Link>
         <button

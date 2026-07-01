@@ -6,6 +6,7 @@ import { css } from "@/lib/css";
 import { StatCard, StatusBadge } from "@/components/admin/StatusBadge";
 import type { CryptohostTransfer, ServiceStatus } from "@/lib/cryptohost/types";
 import { fmtN } from "@/lib/format";
+import { OPS_CENTER_NAME } from "@/lib/brand";
 
 export default function AdminDashboard() {
   const [status, setStatus] = useState<ServiceStatus | null>(null);
@@ -30,7 +31,7 @@ export default function AdminDashboard() {
         <div>
           <h1 data-ops-h1 style={css("font:700 32px var(--font-hanken);margin:0 0 8px;letter-spacing:-0.03em")}>Panel de control</h1>
           <p style={css("font:400 15px var(--font-hanken);color:#9A9AA0;margin:0")}>
-            Motor de liquidación CryptoGold · servicio CRYPTOHOST
+            Motor de liquidación {OPS_CENTER_NAME} · centro de operaciones
           </p>
         </div>
         {status && (

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { css } from "@/lib/css";
 import { Logo } from "@/components/ui";
+import { OPS_CENTER_NAME, OPS_CENTER_TAGLINE } from "@/lib/brand";
 
 export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState("");
@@ -40,8 +41,8 @@ export default function AdminLogin({ onSuccess }: { onSuccess: () => void }) {
         <div style={css("display:flex;align-items:center;gap:12px;margin-bottom:24px")}>
           <Logo height={36} />
           <div>
-            <div style={css("font:700 18px var(--font-hanken);color:#fff")}>CRYPTOHOST</div>
-            <div style={css("font:400 13px var(--font-hanken);color:#9A9AA0")}>Acceso operadores</div>
+            <div style={css("font:700 18px var(--font-hanken);color:#fff")}>{OPS_CENTER_NAME}</div>
+            <div style={css("font:400 13px var(--font-hanken);color:#9A9AA0")}>{OPS_CENTER_TAGLINE}</div>
           </div>
         </div>
         <label style={css("display:block;font:500 13px var(--font-hanken);color:#C8C8CE;margin-bottom:8px")}>Contraseña</label>

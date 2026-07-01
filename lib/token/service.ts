@@ -19,7 +19,9 @@ import { CGOLD_ABI, CGOLD_BYTECODE } from "./abi";
 import { appendMintLog, listMintLogs } from "./mint-log";
 import { TOKEN_CONTRACT_TEMPLATE } from "./contract";
 import { appendDeployment, getActiveDeployment, listDeployments, setActiveDeployment } from "./deployments";
-import type { DeployInput, DeployRecord, MintCategory, MintLogEntry, TokenStats } from "./types";
+import type { DeployInput, DeployRecord, MintCategory, MintInput, MintLogEntry, TokenStats } from "./types";
+import { validateDeployInput } from "./validate";
+import { registerDeploymentFromTx, registerMintFromTx } from "./register-onchain";
 
 const DECIMALS = 18;
 
@@ -93,13 +95,6 @@ export async function getTokenStats(): Promise<TokenStats> {
   };
 }
 
-export type MintInput = {
-  to: string;
-  amount: string;
-  category: MintCategory;
-  note?: string;
-};
-
 export async function mintCgold(input: MintInput): Promise<MintLogEntry> {
   const address = getContractAddress();
   if (!address) throw new Error("No hay contrato activo. Despliega uno o configura NEXT_PUBLIC_CGOLD_BNB_TESTNET");
@@ -143,37 +138,6 @@ export async function mintCgold(input: MintInput): Promise<MintLogEntry> {
   });
 }
 
-function validateDeployInput(input: DeployInput) {
-  const name = input.name?.trim();
-  const symbol = input.symbol?.trim().toUpperCase();
-  if (!name || name.length > 48) throw new Error("Nombre inválido (máx. 48 caracteres)");
-  if (!symbol || symbol.length > 12 || !/^[A-Z0-9]+$/.test(symbol)) {
-    throw new Error("Símbolo inválido (máx. 12, solo A-Z y 0-9)");
-  }
-
-  const maxNum = Number(String(input.maxSupply).replace(/,/g, ""));
-  if (!Number.isFinite(maxNum) || maxNum <= 0 || maxNum > 1e15) {
-    throw new Error("Cantidad máxima inválida");
-  }
-
-  let treasury: Address;
-  if (input.treasury?.trim()) {
-    if (!isAddress(input.treasury.trim())) throw new Error("Treasury inválida");
-    treasury = input.treasury.trim() as Address;
-  } else {
-    const deployer = getDeployerAccount();
-    if (!deployer) throw new Error("Configura TOKEN_DEPLOYER_PRIVATE_KEY o indica treasury");
-    treasury = deployer.address;
-  }
-
-  const initialNum = input.initialMint ? Number(String(input.initialMint).replace(/,/g, "")) : 0;
-  if (!Number.isFinite(initialNum) || initialNum < 0 || initialNum > maxNum) {
-    throw new Error("Mint inicial inválido");
-  }
-
-  return { name, symbol, maxNum, treasury, initialNum };
-}
-
 export async function deployToken(input: DeployInput): Promise<DeployRecord> {
   const wallet = getDeployerWalletClient();
   const deployer = getDeployerAccount();
@@ -181,7 +145,20 @@ export async function deployToken(input: DeployInput): Promise<DeployRecord> {
     throw new Error("TOKEN_DEPLOYER_PRIVATE_KEY (o TOKEN_OWNER_PRIVATE_KEY) no configurada");
   }
 
-  const { name, symbol, maxNum, treasury, initialNum } = validateDeployInput(input);
+  let treasuryAddr: Address;
+  if (input.treasury?.trim()) {
+    if (!isAddress(input.treasury.trim())) throw new Error("Treasury inválida");
+    treasuryAddr = input.treasury.trim() as Address;
+  } else {
+    treasuryAddr = deployer.address;
+  }
+
+  const { name, symbol, maxNum, treasury, initialNum } = validateDeployInput({
+    ...input,
+    treasury: treasuryAddr,
+    deployerFallback: deployer.address,
+  });
+
   const maxSupplyWei = parseUnits(String(maxNum), DECIMALS);
   const initialMintWei = initialNum > 0 ? parseUnits(String(initialNum), DECIMALS) : 0n;
 
@@ -213,6 +190,8 @@ export async function deployToken(input: DeployInput): Promise<DeployRecord> {
     explorer: cfg.explorer,
   });
 }
+
+export { registerDeploymentFromTx, registerMintFromTx };
 
 export function getMintHistory(limit = 50): MintLogEntry[] {
   return listMintLogs(limit);

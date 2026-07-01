@@ -6,6 +6,7 @@ import { css } from "@/lib/css";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import type { CryptohostTransfer } from "@/lib/cryptohost/types";
 import { fmtN } from "@/lib/format";
+import { OPS_CENTER_NAME } from "@/lib/brand";
 
 export default function AdminTransfersPage() {
   const [transfers, setTransfers] = useState<CryptohostTransfer[]>([]);
@@ -27,7 +28,7 @@ export default function AdminTransfersPage() {
     <div>
       <h1 data-ops-h1 style={css("font:700 32px var(--font-hanken);margin:0 0 8px;letter-spacing:-0.03em")}>Transferencias</h1>
       <p style={css("font:400 15px var(--font-hanken);color:#9A9AA0;margin:0 0 28px")}>
-        Todas las operaciones procesadas por CRYPTOHOST en esta instancia.
+        Todas las operaciones procesadas por {OPS_CENTER_NAME} en esta instancia.
       </p>
 
       <div style={css("background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden")}>
