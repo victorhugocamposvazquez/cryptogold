@@ -1,6 +1,7 @@
 import { formatUnits, parseUnits, isAddress, type Address } from "viem";
 import { TOKEN_NAME, TOKEN_SUPPLY, TOKEN_SYMBOL } from "@/lib/brand";
-import { BNB_NETWORK, bnbExplorerAddress, bnbExplorerToken, getBnbChainConfig } from "@/lib/bnb";
+import { bnbExplorerAddress, bnbExplorerToken, getBnbChainConfig } from "@/lib/bnb";
+import { getActiveNetwork } from "@/lib/network-profiles";
 import {
   getContractAddress,
   getContractAddressSource,
@@ -28,6 +29,7 @@ function fmtTokens(wei: bigint): string {
 
 export async function getTokenStats(): Promise<TokenStats> {
   const cfg = getBnbChainConfig();
+  const network = getActiveNetwork();
   const contractAddress = getContractAddress();
   const addressSource = getContractAddressSource();
   const operator = getOperatorAccount();
@@ -41,7 +43,7 @@ export async function getTokenStats(): Promise<TokenStats> {
       addressSource: null,
       tokenName: TOKEN_NAME,
       tokenSymbol: TOKEN_SYMBOL,
-      network: BNB_NETWORK,
+      network,
       chainId: cfg.chainId,
       explorer: cfg.explorer,
       owner: null,
@@ -73,7 +75,7 @@ export async function getTokenStats(): Promise<TokenStats> {
     addressSource,
     tokenName: onChain.tokenName,
     tokenSymbol: onChain.tokenSymbol,
-    network: BNB_NETWORK,
+    network,
     chainId: cfg.chainId,
     explorer: cfg.explorer,
     owner: onChain.owner,
@@ -194,9 +196,10 @@ export async function deployToken(input: DeployInput): Promise<DeployRecord> {
   if (!receipt.contractAddress) throw new Error("Deploy sin dirección de contrato");
 
   const cfg = getBnbChainConfig();
+  const network = getActiveNetwork();
 
   return appendDeployment({
-    network: BNB_NETWORK,
+    network,
     chainId: cfg.chainId,
     address: receipt.contractAddress,
     name,
@@ -216,18 +219,18 @@ export function getMintHistory(limit = 50): MintLogEntry[] {
 }
 
 export function getDeploymentHistory(): DeployRecord[] {
-  return listDeployments(BNB_NETWORK);
+  return listDeployments(getActiveNetwork());
 }
 
 export function activateDeployment(id: string): DeployRecord | null {
   if (getContractAddressSource() === "env") {
     throw new Error("Hay dirección en variables de entorno; la registry queda en segundo plano");
   }
-  return setActiveDeployment(id, BNB_NETWORK);
+  return setActiveDeployment(id, getActiveNetwork());
 }
 
 export function getActiveContractFromRegistry(): DeployRecord | null {
-  return getActiveDeployment(BNB_NETWORK);
+  return getActiveDeployment(getActiveNetwork());
 }
 
 export function explorerLinks(address: string) {

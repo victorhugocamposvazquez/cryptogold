@@ -1,25 +1,31 @@
 import { createPublicClient, createWalletClient, http, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { bsc, bscTestnet } from "viem/chains";
-import { BNB_NETWORK, getBnbChainConfig, getCgoldBnbAddress, getCgoldBnbAddressWithRegistry } from "@/lib/bnb";
+import {
+  getActiveNetwork,
+  getContractAddressFromEnv,
+  getDeployerPrivateKey,
+  getOwnerPrivateKey,
+  getRpcUrl,
+  getTreasuryAddress as getTreasuryFromProfile,
+} from "@/lib/network-profiles";
 import { getActiveDeployment } from "./deployments";
 import { CGOLD_ABI } from "./abi";
 
-function rpcUrl(): string {
-  if (BNB_NETWORK === "testnet") {
-    return process.env.BSC_TESTNET_RPC_URL || bscTestnet.rpcUrls.default.http[0];
-  }
-  return process.env.BSC_MAINNET_RPC_URL || bsc.rpcUrls.default.http[0];
+function pkAccount(raw: string | undefined) {
+  if (!raw) return null;
+  const pk = (raw.startsWith("0x") ? raw : `0x${raw}`) as Hex;
+  return privateKeyToAccount(pk);
 }
 
 export function getViemChain() {
-  return BNB_NETWORK === "mainnet" ? bsc : bscTestnet;
+  return getActiveNetwork() === "mainnet" ? bsc : bscTestnet;
 }
 
 function resolveAddress(): { address: Address | null; source: "env" | "registry" | null } {
-  const fromEnv = getCgoldBnbAddress();
+  const fromEnv = getContractAddressFromEnv();
   if (fromEnv) return { address: fromEnv as Address, source: "env" };
-  const active = getActiveDeployment(BNB_NETWORK);
+  const active = getActiveDeployment(getActiveNetwork());
   if (active?.address) return { address: active.address as Address, source: "registry" };
   return { address: null, source: null };
 }
@@ -35,38 +41,28 @@ export function getContractAddressSource(): "env" | "registry" | null {
 export function getPublicClient() {
   return createPublicClient({
     chain: getViemChain(),
-    transport: http(rpcUrl()),
+    transport: http(getRpcUrl()),
   });
 }
 
-function pkAccount(raw: string | undefined) {
-  if (!raw) return null;
-  const pk = (raw.startsWith("0x") ? raw : `0x${raw}`) as Hex;
-  return privateKeyToAccount(pk);
-}
-
 export function getOperatorAccount() {
-  return pkAccount(process.env.TOKEN_OWNER_PRIVATE_KEY);
+  return pkAccount(getOwnerPrivateKey());
 }
 
 export function getDeployerAccount() {
-  return (
-    pkAccount(process.env.TOKEN_DEPLOYER_PRIVATE_KEY) ??
-    pkAccount(process.env.TOKEN_OWNER_PRIVATE_KEY) ??
-    pkAccount(process.env.DEPLOYER_PRIVATE_KEY)
-  );
+  return pkAccount(getDeployerPrivateKey());
 }
 
 export function getWalletClient() {
   const account = getOperatorAccount();
   if (!account) return null;
-  return createWalletClient({ account, chain: getViemChain(), transport: http(rpcUrl()) });
+  return createWalletClient({ account, chain: getViemChain(), transport: http(getRpcUrl()) });
 }
 
 export function getDeployerWalletClient() {
   const account = getDeployerAccount();
   if (!account) return null;
-  return createWalletClient({ account, chain: getViemChain(), transport: http(rpcUrl()) });
+  return createWalletClient({ account, chain: getViemChain(), transport: http(getRpcUrl()) });
 }
 
 export function isTokenOperatorConfigured(): boolean {
@@ -78,7 +74,7 @@ export function isTokenDeployerConfigured(): boolean {
 }
 
 export function getTreasuryAddress(): Address | null {
-  const addr = process.env.CGOLD_TREASURY_ADDRESS;
+  const addr = getTreasuryFromProfile();
   if (!addr) return null;
   return addr as Address;
 }
@@ -115,4 +111,4 @@ export async function readContractStats() {
   };
 }
 
-export { getBnbChainConfig, getCgoldBnbAddressWithRegistry };
+export { getActiveNetwork, getContractAddressFromEnv as getCgoldBnbAddress };

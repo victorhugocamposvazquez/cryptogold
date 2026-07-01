@@ -12,7 +12,9 @@ export function isPaymentWebhookConfigured(): boolean {
   return !!process.env.PAYMENT_WEBHOOK_SECRET;
 }
 
-export { isCgoldDeployedOnBnb, getCgoldBnbAddress, BNB_NETWORK } from "./bnb";
+export { isCgoldDeployedOnBnb, getCgoldBnbAddress, getActiveNetwork, BNB_NETWORK } from "./bnb";
+export { buildEnvTemplate, resolveNetworkConfigView, NETWORK_PROFILES } from "./network-profiles";
+export type { BnbNetwork, NetworkConfigView } from "./network-profiles";
 
 export function cgoldPriceFromGold(usdPerOz: number): number {
   const ozPerToken = 0.001;

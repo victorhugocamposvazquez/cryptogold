@@ -1,6 +1,6 @@
 import { TOKEN_SYMBOL, TOKEN_SUPPLY, CHAINS } from "./brand";
 import {
-  BNB_NETWORK,
+  getActiveNetwork,
   getBnbChainConfig,
   getCgoldBnbAddress,
   bnbExplorerAddress,
@@ -8,7 +8,7 @@ import {
 } from "./bnb";
 
 export type { BnbNetwork };
-export { BNB_NETWORK, getBnbChainConfig, getCgoldBnbAddress, bnbExplorerAddress, bnbExplorerToken } from "./bnb";
+export { getActiveNetwork, getBnbChainConfig, getCgoldBnbAddress, bnbExplorerAddress, bnbExplorerToken } from "./bnb";
 
 export type ChainKey = "bnb" | "eth" | "polygon" | "solana" | "stellar" | "xrp";
 
@@ -22,9 +22,10 @@ export type ContractEntry = {
 };
 
 function bnbEntry(): ContractEntry {
-  const cfg = getBnbChainConfig();
-  const address = getCgoldBnbAddress();
-  const isTestnet = BNB_NETWORK === "testnet";
+  const network = getActiveNetwork();
+  const cfg = getBnbChainConfig(network);
+  const address = getCgoldBnbAddress(network);
+  const isTestnet = network === "testnet";
 
   return {
     chain: isTestnet ? "BNB Smart Chain Testnet" : "BNB Chain",
@@ -32,7 +33,7 @@ function bnbEntry(): ContractEntry {
     address: address ?? "0x0000000000000000000000000000000000000000",
     explorer: address ? bnbExplorerAddress(address) : `${cfg.explorer}/address/`,
     status: address ? (isTestnet ? "testnet" : "live") : "pending",
-    network: BNB_NETWORK,
+    network,
   };
 }
 

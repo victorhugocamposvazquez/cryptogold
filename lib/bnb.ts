@@ -1,44 +1,51 @@
-/** BNB Chain network config and CGOLD contract address resolution. */
+/** BNB Chain — re-exporta perfiles y helpers de explorador. */
 
-export type BnbNetwork = "testnet" | "mainnet";
+import {
+  getActiveNetwork,
+  getContractAddressFromEnv,
+  getProfile,
+  NETWORK_PROFILES,
+  type BnbNetwork,
+} from "./network-profiles";
 
-export const BNB_NETWORK: BnbNetwork =
-  process.env.NEXT_PUBLIC_BNB_NETWORK === "mainnet" ? "mainnet" : "testnet";
+export type { BnbNetwork };
+export { getActiveNetwork, NETWORK_PROFILES };
+
+/** @deprecated use getActiveNetwork() */
+export const BNB_NETWORK: BnbNetwork = getActiveNetwork();
 
 export const BNB_CHAIN = {
   testnet: {
-    chainId: 97,
+    chainId: NETWORK_PROFILES.testnet.chainId,
     shortName: "BNB Testnet",
-    explorer: "https://testnet.bscscan.com",
-    rpc: "https://data-seed-prebsc-1-s1.binance.org:8545",
-    faucet: "https://www.bnbchain.org/en/testnet-faucet",
+    explorer: NETWORK_PROFILES.testnet.explorer,
+    rpc: NETWORK_PROFILES.testnet.rpcDefault,
+    faucet: NETWORK_PROFILES.testnet.faucet,
   },
   mainnet: {
-    chainId: 56,
+    chainId: NETWORK_PROFILES.mainnet.chainId,
     shortName: "BNB Chain",
-    explorer: "https://bscscan.com",
-    rpc: "https://bsc-dataseed.binance.org",
-    faucet: null,
+    explorer: NETWORK_PROFILES.mainnet.explorer,
+    rpc: NETWORK_PROFILES.mainnet.rpcDefault,
+    faucet: NETWORK_PROFILES.mainnet.faucet,
   },
 } as const;
 
-export function getBnbChainConfig() {
-  return BNB_CHAIN[BNB_NETWORK];
+export function getBnbChainConfig(network: BnbNetwork = getActiveNetwork()) {
+  const p = getProfile(network);
+  return {
+    chainId: p.chainId,
+    shortName: network === "mainnet" ? "BNB Chain" : "BNB Testnet",
+    explorer: p.explorer,
+    rpc: p.rpcDefault,
+    faucet: p.faucet,
+  };
 }
 
-/** Resolved CGOLD contract: env var first, then active deployment from backoffice registry. */
-export function getCgoldBnbAddress(): string | null {
-  const envAddr =
-    BNB_NETWORK === "testnet"
-      ? process.env.NEXT_PUBLIC_CGOLD_BNB_TESTNET
-      : process.env.NEXT_PUBLIC_CGOLD_BNB;
-  if (envAddr && envAddr !== "0x0000000000000000000000000000000000000000") {
-    return envAddr;
-  }
-  return null;
+export function getCgoldBnbAddress(network: BnbNetwork = getActiveNetwork()): string | null {
+  return getContractAddressFromEnv(network);
 }
 
-/** Server-side: includes deployment registry when env is unset. */
 export function getCgoldBnbAddressWithRegistry(registryAddress: string | null): string | null {
   return getCgoldBnbAddress() ?? registryAddress;
 }
@@ -56,22 +63,22 @@ export function bnbExplorerToken(address: string): string {
 }
 
 export function getBnbChainConfigForNetwork(network: BnbNetwork) {
-  return BNB_CHAIN[network];
+  return getBnbChainConfig(network);
 }
 
 export function bnbExplorerTx(txHash: string, network?: BnbNetwork): string {
-  const cfg = network ? BNB_CHAIN[network] : getBnbChainConfig();
+  const cfg = getBnbChainConfig(network ?? getActiveNetwork());
   return `${cfg.explorer}/tx/${txHash}`;
 }
 
 export function bnbExplorerAddressOnNetwork(address: string, network: BnbNetwork): string {
-  return `${BNB_CHAIN[network].explorer}/address/${address}`;
+  return `${NETWORK_PROFILES[network].explorer}/address/${address}`;
 }
 
 export function bnbExplorerTokenOnNetwork(address: string, network: BnbNetwork): string {
-  return `${BNB_CHAIN[network].explorer}/token/${address}`;
+  return `${NETWORK_PROFILES[network].explorer}/token/${address}`;
 }
 
 export function bnbNetworkLabel(network: BnbNetwork): string {
-  return BNB_CHAIN[network].shortName;
+  return network === "mainnet" ? "BNB Chain" : "BNB Testnet";
 }

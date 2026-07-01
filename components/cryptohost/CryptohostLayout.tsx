@@ -19,6 +19,7 @@ function pageTitle(pathname: string) {
   if (pathname.startsWith("/cryptohost/documentacion")) return "Docs";
   if (pathname.startsWith("/cryptohost/comprar")) return "Comprar";
   if (pathname.startsWith("/cryptohost/swap")) return "Swap";
+  if (pathname.startsWith("/admin/red")) return "Red";
   if (pathname.startsWith("/admin/token")) return "Token";
   if (pathname === "/admin") return "Panel";
   if (pathname.startsWith("/admin/transfers/new")) return "Nueva op.";
