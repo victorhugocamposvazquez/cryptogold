@@ -8,12 +8,12 @@ import {
   useSwitchChain,
   useWalletClient,
 } from "wagmi";
-import { injected } from "wagmi/connectors";
+import { adminWalletConnector } from "@/lib/wagmi/config";
 import { getTargetChain, getTargetChainId, getTargetChainLabel } from "@/lib/wagmi/chains";
 
 export function useAdminWallet() {
   const { address, isConnected, isConnecting, chainId } = useAccount();
-  const { connect, isPending: isConnectPending } = useConnect();
+  const { connect, isPending: isConnectPending, error: connectError, reset: resetConnect } = useConnect();
   const { disconnect } = useDisconnect();
   const { switchChain, isPending: isSwitchPending } = useSwitchChain();
   const { data: walletClient, isLoading: walletLoading } = useWalletClient();
@@ -24,7 +24,8 @@ export function useAdminWallet() {
   const isCorrectChain = !isConnected || chainId === targetChainId;
 
   function connectWallet() {
-    connect({ connector: injected({ target: "metaMask" }) });
+    resetConnect();
+    connect({ connector: adminWalletConnector });
   }
 
   async function switchToTargetChain() {
@@ -49,6 +50,7 @@ export function useAdminWallet() {
     publicClient: publicClient ?? null,
     walletReady: !!walletClient && !walletLoading,
     connectWallet,
+    connectError,
     disconnect,
     switchToTargetChain,
     isOwner,

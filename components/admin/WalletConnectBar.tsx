@@ -21,6 +21,7 @@ export default function WalletConnectBar({ ownerAddress, compact }: Props) {
     isSwitchPending,
     targetChainLabel,
     connectWallet,
+    connectError,
     disconnect,
     switchToTargetChain,
     isOwner,
@@ -44,6 +45,13 @@ export default function WalletConnectBar({ ownerAddress, compact }: Props) {
             : isCorrectChain
               ? `Conectada · ${shortAddr(address!)} · ${targetChainLabel}${ownerAddress ? (ownerOk ? " · eres owner" : " · no eres owner") : ""}`
               : `Red incorrecta · cambia a ${targetChainLabel}`}
+          {connectError && (
+            <div style={css("margin-top:8px;color:#ffb4b4")}>
+              {connectError.message.includes("MetaMask") || connectError.message.includes("Provider")
+                ? "MetaMask no responde. Reinicia la extensión (icono → Restart MetaMask) y recarga la página."
+                : connectError.message}
+            </div>
+          )}
         </div>
       </div>
 
